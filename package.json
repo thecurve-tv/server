@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "start": "npm run-script build && node ./bin/www"
+    "build": "tsc && cp app.yaml package.json dist/server",
+    "start": "node bin/www",
+    "dev": "npm run-script build && node dist/server/bin/www"
   },
   "dependencies": {
     "bson": "^4.3.0",

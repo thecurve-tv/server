@@ -11,7 +11,7 @@ import { router as chatRouter } from './routes/chat'
 import { router as roomRouter } from './routes/room'
 
 dotenv.config()
-const app = express()
+export const app = express()
 
 app.use(logger('dev'))
 app.use(express.json())
@@ -34,5 +34,3 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   console.error(err.stack)
   res.status(500).send("Something broke!")
 })
-
-module.exports = app

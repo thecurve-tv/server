@@ -1,0 +1,7 @@
+runtime: nodejs14
+automatic_scaling:
+  max_concurrent_requests: 20
+handlers:
+  - url: .*
+    script: auto
+    secure: always
