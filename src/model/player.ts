@@ -1,15 +1,39 @@
-import mongoose from 'mongoose'
-import { ObjectId } from 'bson'
+import { Schema, model, ObjectId } from 'mongoose'
+import { defaultProperties, IDefaultProperties } from './_defaults';
 
-const playerSchema = new mongoose.Schema({
+const playerSchema = new Schema({
+  game: {
+    type: 'ObjectId',
+    required: true,
+    index: true,
+    ref: 'Game'
+  },
   name: {
     type: String,
-    required: true
+    required: true,
+    minLength: 1,
+    maxLength: 100,
+    trim: true
   },
   bio: {
-    type: ObjectId,
-    required: true
-  }
+    type: String,
+    default: '',
+    maxLength: 1000,
+    trim: true
+  },
+  account: {
+    type: 'ObjectId',
+    sparse: true,
+    ref: 'Account'
+  },
+  ...defaultProperties
 });
 
-export const Player = mongoose.model('Player', playerSchema);
+export interface IPlayer extends IDefaultProperties {
+  game: ObjectId
+  name: string
+  bio: string
+  account?: ObjectId
+}
+
+export const Player = model<IPlayer>('Player', playerSchema);

@@ -1,7 +1,17 @@
-import mongoose from 'mongoose'
+import { Schema, model } from 'mongoose'
+import { defaultProperties, emailRegex, IDefaultProperties } from './_defaults'
 
-const accountSchema = new mongoose.Schema({
-  
-});
+const accountSchema = new Schema({
+  email: {
+    type: String,
+    unique: true,
+    match: emailRegex
+  },
+  ...defaultProperties
+})
 
-export const Account = mongoose.model('Account', accountSchema);
+export interface IAccount extends IDefaultProperties {
+  email: string
+}
+
+export const Account = model<IAccount>('Account', accountSchema)

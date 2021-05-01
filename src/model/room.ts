@@ -1,10 +1,11 @@
-import { ObjectId } from 'bson';
 import mongoose from 'mongoose'
 
 const roomSchema = new mongoose.Schema({
   player: {
-    type: ObjectId,
-    index: true
+    type: 'ObjectId',
+    required: true,
+    index: true,
+    ref: 'Player'
   }
 });
 
