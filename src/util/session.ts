@@ -46,10 +46,10 @@ export function errorResponse(statusCode: number, description: string, res?: Res
     status: statusCode,
     message: description,
     data: data
-  };
-  if (typeof data == "boolean") data = null;
-  if (res) res.status(statusCode).send(json);
-  return json;
+  }
+  if (typeof data == "boolean") data = null
+  if (res) res.status(statusCode).send(json)
+  return json
 }
 
 /**
@@ -60,20 +60,9 @@ export function errorInternal(description: string, res?: Response, data?: any) {
     message: description,
     data: data,
     code: 500
-  };
-  if (res) res.status(500).send(json);
-  return json;
-}
-
-export function beginMongooseSession(): Promise<ClientSession> {
-  return new Promise((resolve, reject) => {
-    startSession()
-      .then(session => {
-        session.startTransaction();
-        resolve(session);
-      })
-      .catch(reject);
-  });
+  }
+  if (res) res.status(500).send(json)
+  return json
 }
 
 export function initArgs(type: 'search', obj: any, accountId: ObjectId | string): SearchArgs
@@ -92,7 +81,7 @@ export function initArgs(type: string, obj: any, accountId: ObjectId | string): 
 
 function q<T>(obj: any, path: string): T | undefined {
   path += 'q.' // all query args start with q.
-  let match = obj;
+  let match = obj
   for (const segment of path.split('.')) {
     if (!(segment in match)) return undefined
     match = match[segment]

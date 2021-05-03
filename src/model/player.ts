@@ -1,5 +1,7 @@
 import { Schema, model, ObjectId } from 'mongoose'
-import { defaultProperties, IDefaultProperties } from './_defaults';
+import { IAccount } from './account';
+import { IGame } from './game';
+import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults';
 
 const playerSchema = new Schema({
   game: {
@@ -27,13 +29,13 @@ const playerSchema = new Schema({
     ref: 'Account'
   },
   ...defaultProperties
-});
+}, defaultOptions);
 
 export interface IPlayer extends IDefaultProperties {
-  game: ObjectId
+  game: ObjectId | IGame
   name: string
   bio: string
-  account?: ObjectId
+  account?: ObjectId | IAccount
 }
 
 export const Player = model<IPlayer>('Player', playerSchema);

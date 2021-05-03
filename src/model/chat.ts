@@ -1,5 +1,5 @@
 import { Schema, model, ObjectId } from 'mongoose'
-import { defaultProperties, IDefaultProperties } from './_defaults';
+import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults';
 
 const chatSchema = new Schema({
   game: {
@@ -15,7 +15,7 @@ const chatSchema = new Schema({
     trim: true
   },
   ...defaultProperties
-});
+}, defaultOptions);
 
 export interface IChat extends IDefaultProperties {
   game: ObjectId

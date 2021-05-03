@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose'
-import { defaultProperties } from './_defaults';
+import { defaultOptions, defaultProperties } from './_defaults';
 
 const photoSchema = new Schema({
   player: {
@@ -17,6 +17,6 @@ const photoSchema = new Schema({
     required: true
   },
   ...defaultProperties
-});
+}, defaultOptions);
 
 export const Photo = model('Photo', photoSchema);

@@ -1,5 +1,6 @@
 import { Schema, model, ObjectId } from 'mongoose'
-import { defaultProperties, IDefaultProperties } from './_defaults';
+import { IAccount } from './account';
+import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults';
 
 const gameSchema = new Schema({
   hostAccount: {
@@ -19,10 +20,12 @@ const gameSchema = new Schema({
     index: true
   },
   ...defaultProperties
-})
+}, defaultOptions)
 
 export interface IGame extends IDefaultProperties {
-  hostAccount: ObjectId
+  hostAccount: ObjectId | IAccount
+  startTime: number,
+  endTime: number
 }
 
 export const Game = model<IGame>('Game', gameSchema)

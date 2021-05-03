@@ -1,6 +1,8 @@
 import { schemaComposer } from 'graphql-compose'
-import { accountQueries } from './account.schema'
-import { gameMutations, gameQueries } from './game.schema'
+import { accountQueries } from './account/account.schema'
+import { chatQueries } from './chat/chat.schema'
+import { gameMutations, gameQueries } from './game/game.schema'
+import { playerQueries } from './player/player.schema'
 
 // TODO verify account id on all requests
 // TODO protect this resolver, users can only fetch their own account
@@ -8,7 +10,9 @@ import { gameMutations, gameQueries } from './game.schema'
 
 schemaComposer.Query.addFields({
   ...accountQueries,
-  ...gameQueries
+  ...chatQueries,
+  ...gameQueries,
+  ...playerQueries
 })
 
 schemaComposer.Mutation.addFields({

@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose'
-import { defaultProperties, emailRegex, IDefaultProperties } from './_defaults'
+import { defaultOptions, defaultProperties, emailRegex, IDefaultProperties } from './_defaults'
 
 const accountSchema = new Schema({
   email: {
@@ -8,7 +8,7 @@ const accountSchema = new Schema({
     match: emailRegex
   },
   ...defaultProperties
-})
+}, defaultOptions)
 
 export interface IAccount extends IDefaultProperties {
   email: string
