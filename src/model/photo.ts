@@ -1,5 +1,5 @@
-import { Schema, model } from 'mongoose'
-import { defaultOptions, defaultProperties } from './_defaults';
+import { Schema, model, ObjectId } from 'mongoose'
+import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults'
 
 const photoSchema = new Schema({
   player: {
@@ -17,6 +17,12 @@ const photoSchema = new Schema({
     required: true
   },
   ...defaultProperties
-}, defaultOptions);
+}, defaultOptions)
 
-export const Photo = model('Photo', photoSchema);
+export interface IPhoto extends IDefaultProperties {
+  player: ObjectId
+  uri: string
+  alt: string
+}
+
+export const Photo = model('Photo', photoSchema)

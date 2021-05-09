@@ -22,7 +22,7 @@ router.post('', enableCors(<string>environment.AUTH0_DOMAIN), body('email').isEm
         email: req.body.email
       }
       Account.create([accountDoc], { validateBeforeSave: true })
-        .then(() => res.sendStatus(201))
+        .then(docs => res.status(201).send(docs[0]))
         .catch(next)
     })
     .catch(next)

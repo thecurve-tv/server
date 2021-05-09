@@ -1,7 +1,8 @@
 import { schemaComposer } from 'graphql-compose'
 import { accountQueries } from './account/account.schema'
-import { chatQueries } from './chat/chat.schema'
+import { chatPlayerQueries, chatQueries } from './chat/chat.schema'
 import { gameMutations, gameQueries } from './game/game.schema'
+import { photoQueries } from './photo/photo.schema'
 import { playerQueries } from './player/player.schema'
 
 // TODO verify account id on all requests
@@ -11,8 +12,10 @@ import { playerQueries } from './player/player.schema'
 schemaComposer.Query.addFields({
   ...accountQueries,
   ...chatQueries,
+  ...chatPlayerQueries,
   ...gameQueries,
-  ...playerQueries
+  ...playerQueries,
+  ...photoQueries
 })
 
 schemaComposer.Mutation.addFields({

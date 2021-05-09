@@ -1,8 +1,18 @@
-import mongoose from 'mongoose'
-import { defaultOptions, defaultProperties } from './_defaults';
+import { Schema, model, ObjectId } from 'mongoose'
+import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults'
 
-const minigameSchema = new mongoose.Schema({
+const minigameSchema = new Schema({
+  game: {
+    type: 'ObjectId',
+    required: true,
+    index: true,
+    ref: 'Game'
+  },
   ...defaultProperties
-}, defaultOptions);
+}, defaultOptions)
 
-export const Minigame = mongoose.model('Minigame', minigameSchema);
+export interface IMinigame extends IDefaultProperties {
+  game: ObjectId
+}
+
+export const Minigame = model<IMinigame>('Minigame', minigameSchema)

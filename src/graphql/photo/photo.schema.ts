@@ -1,0 +1,19 @@
+import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
+import { IPhoto } from '../../model/photo'
+import { ResolverContext } from '../graphql'
+import { PhotoTC, PlayerTC } from '../types'
+
+PhotoTC.addRelation(
+  'player',
+  {
+    resolver: () => PlayerTC.mongooseResolvers.findById(),
+    prepareArgs: {
+      _id: player => player.player,
+    },
+    projection: { player: 1 }
+  }
+)
+
+export const photoQueries: ObjectTypeComposerFieldConfigMapDefinition<IPhoto, ResolverContext> = {
+  photoById: PhotoTC.mongooseResolvers.findById()
+}

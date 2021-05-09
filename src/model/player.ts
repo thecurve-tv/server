@@ -1,7 +1,8 @@
 import { Schema, model, ObjectId } from 'mongoose'
-import { IAccount } from './account';
-import { IGame } from './game';
-import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults';
+import { IAccount } from './account'
+import { IGame } from './game'
+import { IPhoto } from './photo'
+import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults'
 
 const playerSchema = new Schema({
   game: {
@@ -14,7 +15,7 @@ const playerSchema = new Schema({
     type: String,
     required: true,
     minLength: 1,
-    maxLength: 100,
+    maxLength: 20,
     trim: true
   },
   bio: {
@@ -23,19 +24,25 @@ const playerSchema = new Schema({
     maxLength: 1000,
     trim: true
   },
+  photo: {
+    type: 'ObjectId',
+    ref: 'Photo'
+  },
   account: {
     type: 'ObjectId',
-    sparse: true,
-    ref: 'Account'
+    ref: 'Account',
+    required: true,
+    index: true
   },
   ...defaultProperties
-}, defaultOptions);
+}, defaultOptions)
 
 export interface IPlayer extends IDefaultProperties {
   game: ObjectId | IGame
   name: string
   bio: string
-  account?: ObjectId | IAccount
+  photo?: ObjectId | IPhoto
+  account: ObjectId | IAccount
 }
 
-export const Player = model<IPlayer>('Player', playerSchema);
+export const Player = model<IPlayer>('Player', playerSchema)

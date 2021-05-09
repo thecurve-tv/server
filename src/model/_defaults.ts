@@ -2,14 +2,17 @@ import { Document, SchemaOptions } from "mongoose"
 
 export const defaultProperties = {
   '_log.createdDate': {
-    type: Number
+    type: Number,
+    min: 0
   },
   '_log.updatedDate': {
-    type: Number
+    type: Number,
+    min: 0
   }
 }
 
 export const defaultOptions: SchemaOptions = {
+  validateBeforeSave: true,
   timestamps: {
     createdAt: '_log.createdDate',
     updatedAt: '_log.updatedDate',

@@ -1,13 +1,9 @@
-import { composeMongoose } from 'graphql-compose-mongoose'
 import { ObjectTypeComposerFieldConfigMapDefinition, schemaComposer } from 'graphql-compose'
-import { Game, IGame } from '../../model/game'
-import { AccountTC } from '../account/account.schema'
+import { IGame } from '../../model/game'
 import { ResolverContext } from '../graphql'
-import { GameStartMutationResolver } from './game.resolver'
-import { ChatTC } from '../chat/chat.schema'
-import { PlayerTC } from '../player/player.schema'
+import { GameJoinMutationResolver, GameStartMutationResolver, GameStopMutationResolver } from './game.resolver'
+import { AccountTC, ChatTC, GameTC, PlayerTC } from '../types'
 
-export const GameTC = composeMongoose(Game)
 GameTC.addRelation(
   'hostAccount',
   {
@@ -18,12 +14,24 @@ GameTC.addRelation(
     projection: { hostAccount: 1 }
   }
 )
+GameTC.addRelation(
+  'mainChat',
+  {
+    resolver: () => ChatTC.mongooseResolvers.findById(),
+    prepareArgs: {
+      _id: game => game.mainChat,
+    },
+    projection: { mainChat: 1 }
+  }
+)
 
 export const gameQueries: ObjectTypeComposerFieldConfigMapDefinition<IGame, ResolverContext> = {
+  gameById: GameTC.mongooseResolvers.findById(),
   gameMany: GameTC.mongooseResolvers.findMany()
 }
 
 export const gameMutations: ObjectTypeComposerFieldConfigMapDefinition<IGame, ResolverContext> = {
+  gameUpdateById: GameTC.mongooseResolvers.updateById(),
   gameStart: {
     type: schemaComposer.createObjectTC({
       name: 'GameStartMutationResolverResult',
@@ -33,7 +41,26 @@ export const gameMutations: ObjectTypeComposerFieldConfigMapDefinition<IGame, Re
         chat: ChatTC.getType()
       },
     }),
-    args: { hostPlayerName: 'String!', duration: 'Float!' },
+    args: {
+      hostPlayerName: 'String!',
+      maxPlayerCount: 'Int!',
+      duration: 'Int!'
+    },
     resolve: GameStartMutationResolver
+  },
+  gameStop: {
+    type: GameTC,
+    args: {
+      _id: 'MongoID!'
+    },
+    resolve: GameStopMutationResolver
+  },
+  gameJoin: {
+    type: GameTC,
+    args: {
+      gameId: 'MongoID!',
+      playerName: 'String!'
+    },
+    resolve: GameJoinMutationResolver
   }
 }

@@ -1,7 +1,8 @@
-import mongoose from 'mongoose'
-import { defaultOptions, defaultProperties } from './_defaults';
+import { Schema, model, ObjectId } from 'mongoose'
+import { IPlayer } from './player'
+import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults'
 
-const roomSchema = new mongoose.Schema({
+const roomSchema = new Schema({
   player: {
     type: 'ObjectId',
     required: true,
@@ -9,6 +10,10 @@ const roomSchema = new mongoose.Schema({
     ref: 'Player'
   },
   ...defaultProperties
-}, defaultOptions);
+}, defaultOptions)
 
-export const Room = mongoose.model('Room', roomSchema);
+export interface IRoom extends IDefaultProperties {
+  player: ObjectId | IPlayer
+}
+
+export const Room = model<IRoom>('Room', roomSchema)

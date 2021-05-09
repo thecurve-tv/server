@@ -14,7 +14,7 @@ import { getGraphQLMiddleware } from './graphql/graphql'
 
 export const app = express()
 
-app.use(logger('dev'))
+app.use(logger(environment.prod ? 'tiny' : 'dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
@@ -29,7 +29,6 @@ graphQLServer.applyMiddleware({
   cors: true,
   onHealthCheck: () =>
     new Promise<boolean>((resolve, reject) => {
-      console.log(mongoose.connection.readyState)
       if (mongoose.connection.readyState === 1) resolve(true)
       else reject()
     })
@@ -48,6 +47,10 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(500).send("Something broke!")
 })
 
-mongoose.connect(<string>environment.MONGODB_CONNECT_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.set('runValidators', true)
+mongoose.connect(<string>environment.MONGODB_CONNECT_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Failed to connect to MongoDB', err))

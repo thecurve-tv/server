@@ -1,8 +1,18 @@
-import mongoose from 'mongoose'
-import { defaultOptions, defaultProperties } from './_defaults';
+import { Schema, model, ObjectId } from 'mongoose'
+import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults'
 
-const alertSchema = new mongoose.Schema({
+const alertSchema = new Schema({
+  game: {
+    type: 'ObjectId',
+    required: true,
+    index: true,
+    ref: 'Game'
+  },
   ...defaultProperties
-}, defaultOptions);
+}, defaultOptions)
 
-export const Alert = mongoose.model('Alert', alertSchema);
+export interface IAlert extends IDefaultProperties {
+  game: ObjectId
+}
+
+export const Alert = model<IAlert>('Alert', alertSchema)
