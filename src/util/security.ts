@@ -1,10 +1,20 @@
-import cors from 'cors';
-import { Request, RequestHandler } from 'express';
-import jwt from 'express-jwt';
-import jwtAuthz from 'express-jwt-authz';
-import jwksRsa from 'jwks-rsa';
-import { AuthenticationClient } from 'auth0';
-import { environment } from '../environment';
+import cors from 'cors'
+import { Request, RequestHandler } from 'express'
+import jwt from 'express-jwt'
+import jwtAuthz from 'express-jwt-authz'
+import jwksRsa from 'jwks-rsa'
+import { AuthenticationClient } from 'auth0'
+import { environment } from '../environment'
+
+export interface JwtRequestUser {
+  iss?: string,
+  sub?: string,
+  aud?: string[],
+  iat?: number,
+  exp?: number,
+  azp?: string,
+  scope?: string
+}
 
 export const auth0 = new AuthenticationClient({
   domain: <string>environment.AUTH0_API_DOMAIN,

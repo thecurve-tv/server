@@ -1,10 +1,11 @@
 import { Request, RequestHandler, Response } from 'express'
-import { ClientSession, ObjectId, QueryOptions, startSession } from 'mongoose'
+import { ObjectId, QueryOptions } from 'mongoose'
 import { IAccount, Account } from '../model/account'
-import { auth0, getAccessToken } from './security'
+import { JwtRequestUser } from './security'
 
 export interface AuthenticatedRequest extends Request {
   account?: IAccount
+  user?: JwtRequestUser
 }
 
 export interface SearchArgs {
@@ -15,23 +16,17 @@ export interface SearchArgs {
   options: QueryOptions
 }
 
-export function fetchAccount(verifyExists = false, projection: any = { _log: -1 }) {
-  const handler: RequestHandler = async (req: AuthenticatedRequest, res, next) => {
-    const accessToken = getAccessToken(req)
-    if (!accessToken) {
-      console.error(new Error('Failed to get user from Auth0. The request had no access token'))
-      return errorInternal('Failed to authenticate request', res)
-    }
-    auth0.users?.getInfo(accessToken)
-      .then(user => {
-        if (!user) return errorResponse(403, "Provided access token doesn't represent an existing user", res)
-        Account.findOne({ email: user.email }, projection)
-          .then(account => {
-            if (verifyExists && !account) return errorResponse(404, 'Failed to get an account with that access token', res)
-            req.account = account || undefined
-            next()
-          })
-          .catch(next)
+/**
+ * Must be used after authenticating a request
+ */
+export function fetchAccount(verifyExists = false, projection: any = { _log: 0 }) {
+  const handler: RequestHandler = (req: AuthenticatedRequest, res, next) => {
+    const auth0Id = req.user?.sub
+    Account.findOne({ auth0Id }, projection)
+      .then(account => {
+        if (verifyExists && !account) return errorResponse(404, 'Failed to get an account with that access token', res)
+        req.account = account || undefined
+        next()
       })
       .catch(next)
   }
