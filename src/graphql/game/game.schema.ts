@@ -56,7 +56,13 @@ export const gameMutations: ObjectTypeComposerFieldConfigMapDefinition<IGame, Re
     resolve: GameStopMutationResolver
   },
   gameJoin: {
-    type: GameTC,
+    type: schemaComposer.createObjectTC({
+      name: 'GameJoinMutationResolverResult',
+      fields: {
+        game: GameTC.getType(),
+        player: PlayerTC.getType()
+      },
+    }),
     args: {
       gameId: 'MongoID!',
       playerName: 'String!'

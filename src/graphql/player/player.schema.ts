@@ -36,5 +36,10 @@ PlayerTC.addRelation(
 
 export const playerQueries: ObjectTypeComposerFieldConfigMapDefinition<IPlayer, ResolverContext> = {
   playerById: PlayerTC.mongooseResolvers.findById(),
+  playerOne: PlayerTC.mongooseResolvers.findOne(),
   playerMany: PlayerTC.mongooseResolvers.findMany()
+}
+
+export const playerMutations: ObjectTypeComposerFieldConfigMapDefinition<IPlayer, ResolverContext> = {
+  playerUpdateById: PlayerTC.mongooseResolvers.updateById()
 }

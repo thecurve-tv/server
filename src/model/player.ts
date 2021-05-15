@@ -18,6 +18,17 @@ const playerSchema = new Schema({
     maxLength: 20,
     trim: true
   },
+  age: {
+    type: Number,
+    default: 18,
+    min: 13
+  },
+  job: {
+    type: String,
+    default: '',
+    maxLength: 20,
+    trim: true
+  },
   bio: {
     type: String,
     default: '',
@@ -40,6 +51,8 @@ const playerSchema = new Schema({
 export interface IPlayer extends IDefaultProperties {
   game: ObjectId | IGame
   name: string
+  age: number
+  job: string
   bio: string
   photo?: ObjectId | IPhoto
   account: ObjectId | IAccount

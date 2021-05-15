@@ -3,7 +3,7 @@ import { accountQueries } from './account/account.schema'
 import { chatPlayerQueries, chatQueries } from './chat/chat.schema'
 import { gameMutations, gameQueries } from './game/game.schema'
 import { photoQueries } from './photo/photo.schema'
-import { playerQueries } from './player/player.schema'
+import { playerMutations, playerQueries } from './player/player.schema'
 
 // TODO verify account id on all requests
 // TODO protect this resolver, users can only fetch their own account
@@ -19,7 +19,8 @@ schemaComposer.Query.addFields({
 })
 
 schemaComposer.Mutation.addFields({
-  ...gameMutations
+  ...gameMutations,
+  ...playerMutations
 })
 
 const Schema = schemaComposer.buildSchema()

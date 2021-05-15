@@ -55,6 +55,8 @@ export const GameStartMutationResolver: GraphQLFieldResolver<IGame, ResolverCont
       game: gameId,
       account: context.account?._id,
       name: args.hostPlayerName,
+      age: 18,
+      job: '',
       bio: ''
     }
     let result;
@@ -122,6 +124,8 @@ export const GameJoinMutationResolver: GraphQLFieldResolver<IGame, ResolverConte
       game: gameId,
       account: context.account?._id,
       name: args.playerName,
+      age: 18,
+      job: '',
       bio: ''
     }
     const chatPlayerDoc: IDraftDocument<IChatPlayer> = {
@@ -132,11 +136,17 @@ export const GameJoinMutationResolver: GraphQLFieldResolver<IGame, ResolverConte
       player: playerDoc._id
     }
     const session = await startSession()
+    let result
     const creationPromise: Promise<void> = Promise.all([
       Player.create([playerDoc], { session }),
       ChatPlayer.create([chatPlayerDoc], { session }),
       Room.create([roomDoc], { session })
-    ]).then(() => { })
+    ]).then(([[player],_chatPlayers, _rooms]) => {
+      result = {
+        game: activeGame,
+        player
+      }
+    })
     await session.withTransaction(() => creationPromise)
-    return activeGame
+    return result
   }
