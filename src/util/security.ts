@@ -51,8 +51,8 @@ export function ensureAuthenticated(...scopes: string[]) {
 }
 
 export function enableCors(...allowedOrigins: string[]) {
-  const allowAnonymous = !environment.prod
-  if (!environment.prod) {
+  const allowAnonymous = !environment.PROD
+  if (!environment.PROD) {
     const localhost = `http://localhost:${environment.PORT}`
     const client = <string>environment.CLIENT_DOMAIN
     if (!allowedOrigins.includes(localhost)) allowedOrigins.push(localhost)

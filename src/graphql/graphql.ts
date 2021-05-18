@@ -19,8 +19,8 @@ export class GraphErrorResponse extends ApolloError {
 export function getGraphQLMiddleware() {
   return new ApolloServer({
     schema: Schema,
-    playground: !environment.prod,
-    debug: !environment.prod,
+    playground: !environment.PROD,
+    debug: !environment.PROD,
     introspection: true,
     tracing: true,
     context: getGraphQLContext
@@ -32,12 +32,12 @@ async function getGraphQLContext({ req, res }: ExpressContext): Promise<Resolver
   let account: IAccount | null
   try {
     account = await authenticateGraphRequest(req, res)
-    const attemptDevAccount = !account && !environment.prod && environment.DEV_ACCOUNT_ID && !getAccessToken(req)
+    const attemptDevAccount = !account && !environment.PROD && environment.DEV_ACCOUNT_ID && !getAccessToken(req)
     if (attemptDevAccount) {
       account = await Account.findById(environment.DEV_ACCOUNT_ID, { _id: 1 })
     }
   } catch (err) {
-    if (!environment.prod) console.error('GraphQL Authentication broke!', err)
+    if (!environment.PROD) console.error('GraphQL Authentication broke!', err)
     throw new GraphErrorResponse(500, err.message || 'GraphQL Authentication broke!')
   }
   if (!account) throw new AuthenticationError(`You must be logged in to use the GraphQL endpoint`)

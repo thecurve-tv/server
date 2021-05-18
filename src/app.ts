@@ -14,7 +14,7 @@ import { getGraphQLMiddleware } from './graphql/graphql'
 
 export const app = express()
 
-app.use(logger(environment.prod ? 'tiny' : 'dev'))
+app.use(logger(environment.PROD ? 'tiny' : 'dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
