@@ -3,15 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc && cp app.yaml package.json src/.env dist/server",
-    "start": "node bin/www",
-    "dev": "npm run-script build && cd dist/server/ && node bin/www"
+    "package": "npm run lint && npm run build && cp app.yaml dist/server",
+    "build": "tsc && cp package*.json src/.env dist/server",
+    "lint": "prettier --write .",
+    "start": "cd src && ts-node bin/www"
   },
   "dependencies": {
-    "@graphql-tools/merge": "^6.2.13",
     "apollo-server-express": "^2.24.0",
     "auth0": "^2.34.2",
-    "bson": "^4.3.0",
+    "bson": "^4.4.0",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "debug": "~2.6.9",
@@ -35,6 +35,8 @@
     "@types/express": "^4.17.11",
     "@types/express-jwt": "^6.0.1",
     "@types/morgan": "^1.9.2",
+    "prettier": "^2.3.0",
+    "ts-node": "^9.1.1",
     "typescript": "^4.2.4"
   }
 }

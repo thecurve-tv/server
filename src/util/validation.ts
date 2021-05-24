@@ -57,5 +57,5 @@ export function attachCommonOptions(options: any, query: DocumentQuery<Document[
  * Escapes a given string for use in a regex expression
  */
 export function escapeRegex(s: string) {
-  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")
+  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
 }

@@ -7,12 +7,12 @@ import { AuthenticationClient } from 'auth0'
 import { environment } from '../environment'
 
 export interface JwtRequestUser {
-  iss?: string,
-  sub?: string,
-  aud?: string[],
-  iat?: number,
-  exp?: number,
-  azp?: string,
+  iss?: string
+  sub?: string
+  aud?: string[]
+  iat?: number
+  exp?: number
+  azp?: string
   scope?: string
 }
 
@@ -37,7 +37,7 @@ const checkJwt = jwt({
   audience: environment.AUTH0_API_AUDIENCE,
   issuer: [`${environment.AUTH0_DOMAIN}/`],
   algorithms: ['RS256']
-});
+})
 
 export function getAccessToken(req: Request) {
   const authHeader = req.headers['authorization']

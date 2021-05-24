@@ -1,15 +1,19 @@
-import { Schema, model, ObjectId } from 'mongoose'
+import { ObjectId } from 'bson'
+import { Schema, model } from 'mongoose'
 import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults'
 
-const minigameSchema = new Schema({
-  game: {
-    type: 'ObjectId',
-    required: true,
-    index: true,
-    ref: 'Game'
+const minigameSchema = new Schema(
+  {
+    game: {
+      type: 'ObjectId',
+      required: true,
+      index: true,
+      ref: 'Game'
+    },
+    ...defaultProperties
   },
-  ...defaultProperties
-}, defaultOptions)
+  defaultOptions
+)
 
 export interface IMinigame extends IDefaultProperties {
   game: ObjectId

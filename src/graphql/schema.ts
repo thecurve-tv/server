@@ -1,6 +1,7 @@
 import { schemaComposer } from 'graphql-compose'
 import { accountQueries } from './account/account.schema'
-import { chatPlayerQueries, chatQueries } from './chat/chat.schema'
+import { chatPlayerQueries } from './chat/chat-player.schema'
+import { chatQueries } from './chat/chat.schema'
 import { gameMutations, gameQueries } from './game/game.schema'
 import { photoQueries } from './photo/photo.schema'
 import { playerMutations, playerQueries } from './player/player.schema'

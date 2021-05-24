@@ -44,13 +44,14 @@ app.use('*', (req, res) => {
 })
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err.stack)
-  res.status(500).send("Something broke!")
+  res.status(500).send('Something broke!')
 })
 
 mongoose.set('runValidators', true)
-mongoose.connect(<string>environment.MONGODB_CONNECT_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose
+  .connect(<string>environment.MONGODB_CONNECT_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Failed to connect to MongoDB', err))

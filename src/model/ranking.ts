@@ -1,15 +1,19 @@
-import { Schema, model, ObjectId } from 'mongoose'
+import { ObjectId } from 'bson'
+import { Schema, model } from 'mongoose'
 import { defaultOptions, defaultProperties, IDefaultProperties } from './_defaults'
 
-const rankingSchema = new Schema({
-  game: {
-    type: 'ObjectId',
-    required: true,
-    index: true,
-    ref: 'Game'
+const rankingSchema = new Schema(
+  {
+    game: {
+      type: 'ObjectId',
+      required: true,
+      index: true,
+      ref: 'Game'
+    },
+    ...defaultProperties
   },
-  ...defaultProperties
-}, defaultOptions)
+  defaultOptions
+)
 
 export interface IRanking extends IDefaultProperties {
   game: ObjectId

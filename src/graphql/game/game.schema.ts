@@ -1,72 +1,55 @@
-import { ObjectTypeComposerFieldConfigMapDefinition, schemaComposer } from 'graphql-compose'
+import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IGame } from '../../model/game'
 import { ResolverContext } from '../graphql'
-import { GameJoinMutationResolver, GameStartMutationResolver, GameStopMutationResolver } from './game.resolver'
 import { AccountTC, ChatTC, GameTC, PlayerTC } from '../types'
+import { guardResolver } from '../guard'
+import gameStartMutationResolver from './game-start.mutation.resolver'
+import gameStopMutationResolver from './game-stop.mutation.resolver'
+import gameJoinMutationResolver from './game-join.mutation.resolver'
+import gameGetInviteQueryResolver from './game-get-invite.query.resolver'
+import IsOwnGameGuard from './is-own-game.guard'
+import IsGameHostGuard from './is-game-host.guard'
+import CanEditGameGuard from './can-edit-game.guard'
 
-GameTC.addRelation(
-  'hostAccount',
-  {
-    resolver: () => AccountTC.mongooseResolvers.findById(),
-    prepareArgs: {
-      _id: game => game.hostAccount,
-    },
-    projection: { hostAccount: 1 }
-  }
-)
-GameTC.addRelation(
-  'mainChat',
-  {
-    resolver: () => ChatTC.mongooseResolvers.findById(),
-    prepareArgs: {
-      _id: game => game.mainChat,
-    },
-    projection: { mainChat: 1 }
-  }
-)
+// normalised relations
+GameTC.addRelation('hostAccount', {
+  resolver: () => AccountTC.mongooseResolvers.findById(),
+  prepareArgs: {
+    _id: game => game.hostAccount
+  },
+  projection: { hostAccount: 1 }
+})
+GameTC.addRelation('mainChat', {
+  resolver: () => ChatTC.mongooseResolvers.findById(),
+  prepareArgs: {
+    _id: game => game.mainChat
+  },
+  projection: { mainChat: 1 }
+})
+// non-normalised relations
+GameTC.addRelation('chats', {
+  resolver: () => ChatTC.mongooseResolvers.findMany(),
+  prepareArgs: {
+    filter: game => ({ game: game._id })
+  },
+  projection: { _id: 1 }
+})
+GameTC.addRelation('players', {
+  resolver: () => PlayerTC.mongooseResolvers.findMany(),
+  prepareArgs: {
+    filter: game => ({ game: game._id })
+  },
+  projection: { _id: 1 }
+})
 
 export const gameQueries: ObjectTypeComposerFieldConfigMapDefinition<IGame, ResolverContext> = {
-  gameById: GameTC.mongooseResolvers.findById(),
-  gameMany: GameTC.mongooseResolvers.findMany()
+  gameById: guardResolver(GameTC.mongooseResolvers.findById(), new IsOwnGameGuard()),
+  gameGetInvite: gameGetInviteQueryResolver
 }
 
 export const gameMutations: ObjectTypeComposerFieldConfigMapDefinition<IGame, ResolverContext> = {
-  gameUpdateById: GameTC.mongooseResolvers.updateById(),
-  gameStart: {
-    type: schemaComposer.createObjectTC({
-      name: 'GameStartMutationResolverResult',
-      fields: {
-        game: GameTC.getType(),
-        hostPlayer: PlayerTC.getType(),
-        chat: ChatTC.getType()
-      },
-    }),
-    args: {
-      hostPlayerName: 'String!',
-      maxPlayerCount: 'Int!',
-      duration: 'Int!'
-    },
-    resolve: GameStartMutationResolver
-  },
-  gameStop: {
-    type: GameTC,
-    args: {
-      _id: 'MongoID!'
-    },
-    resolve: GameStopMutationResolver
-  },
-  gameJoin: {
-    type: schemaComposer.createObjectTC({
-      name: 'GameJoinMutationResolverResult',
-      fields: {
-        game: GameTC.getType(),
-        player: PlayerTC.getType()
-      },
-    }),
-    args: {
-      gameId: 'MongoID!',
-      playerName: 'String!'
-    },
-    resolve: GameJoinMutationResolver
-  }
+  gameStart: gameStartMutationResolver,
+  gameStop: guardResolver(gameStopMutationResolver, new IsGameHostGuard()),
+  gameJoin: gameJoinMutationResolver,
+  gameUpdateById: guardResolver(GameTC.mongooseResolvers.updateById(), new CanEditGameGuard())
 }

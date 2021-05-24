@@ -12,5 +12,5 @@ router.post('start', ensureAuthenticated(), fetchAccount(), (req: AuthenticatedR
 
 router.get('', ensureAuthenticated(), fetchAccount(), (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.account) return errorResponse(40, 'Failed to get an account with that access token', res)
-  Game.find({hostAccount: req.account?._id})
+  Game.find({ hostAccount: req.account?._id })
 })

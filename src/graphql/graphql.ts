@@ -7,7 +7,7 @@ import { AuthenticatedRequest, errorResponse, fetchAccount } from '../util/sessi
 import { Account, IAccount } from '../model/account'
 
 export interface ResolverContext extends ExpressContext {
-  account?: IAccount
+  account: IAccount & { _id: NonNullable<IAccount['_id']> } // we assert that _id will always be available
 }
 
 export class GraphErrorResponse extends ApolloError {

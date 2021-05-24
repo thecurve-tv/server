@@ -1,5 +1,6 @@
+import { ObjectId } from 'bson'
 import { Request, RequestHandler, Response } from 'express'
-import { ObjectId, QueryOptions } from 'mongoose'
+import { QueryOptions } from 'mongoose'
 import { IAccount, Account } from '../model/account'
 import { JwtRequestUser } from './security'
 
@@ -42,7 +43,7 @@ export function errorResponse(statusCode: number, description: string, res?: Res
     message: description,
     data: data
   }
-  if (typeof data == "boolean") data = null
+  if (typeof data == 'boolean') data = null
   if (res) res.status(statusCode).send(json)
   return json
 }
@@ -62,7 +63,7 @@ export function errorInternal(description: string, res?: Response, data?: any) {
 
 export function initArgs(type: 'search', obj: any, accountId: ObjectId | string): SearchArgs
 export function initArgs(type: string, obj: any, accountId: ObjectId | string): unknown {
-  const project: | undefined = obj.project
+  const project: undefined = obj.project
   const query: { [key: string]: any } = { '_log.accountId': accountId } // protect all queries
   return {
     addCondition: (key: string, value: any) => {
