@@ -76,6 +76,6 @@ jobs:
         uses: google-github-actions/deploy-appengine@v0.3.0
         with:
           credentials: ${{ secrets.GCP_SA_KEY }}
-          working_directory: ${{ github.workspace }}/server/dist/server
+          working_directory: ${{ github.workspace }}/dist/server
           deliverables: 'app.yaml'
 
