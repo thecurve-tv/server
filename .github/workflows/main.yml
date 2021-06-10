@@ -1,0 +1,81 @@
+name: CI for the server node
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [main]
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  audit-packages:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # we want to be notified of vulnerabilities but don't want them to block development
+    continue-on-error: true
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Install NPM packages 📦
+        run: npm install
+      # Runs a single command using the runners shell
+      - name: Audit NPM packages ✔🕵️‍♀️
+        # only fails the audit if the results include a vulnerability with a level of moderate or higher
+        run: npm audit --audit-level=moderate --production &> /dev/null
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: Install NPM packages 📦
+        run: npm install
+      - name: Create .env 🤫
+        uses: DeveloperRic/action-create-env@v1.0.3
+        with:
+          full_text: ''
+          directory: src
+          include_env_vars: true
+        env:
+          ACTION_CREATE_ENV_PROD: ${{ secrets.PROD }}
+          ACTION_CREATE_ENV_PORT: ${{ secrets.PORT }}
+          ACTION_CREATE_ENV_AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+          ACTION_CREATE_ENV_AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+          ACTION_CREATE_ENV_AUTH0_API_AUDIENCE: ${{ secrets.AUTH0_API_AUDIENCE }}
+          ACTION_CREATE_ENV_AUTH0_API_DOMAIN: ${{ secrets.AUTH0_API_DOMAIN }}
+          ACTION_CREATE_ENV_CLIENT_DOMAIN: ${{ secrets.CLIENT_DOMAIN }}
+          ACTION_CREATE_ENV_MONGODB_CONNECT_URI: ${{ secrets.MONGODB_CONNECT_URI }}
+      - name: Build server 🛠
+        run: npm run package
+      - name: Upload deployment artifacts ⛅
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v2
+        with:
+          name: deployment-artifacts
+          path: server/dist/server
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main'
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v2 # required for GITHUB_WORKSPACE env var
+      - name: Download deployment artifacts 🌩
+        uses: actions/download-artifact@v2
+        with:
+          name: deployment-artifacts
+          path: server/dist/server
+      - name: Deploy app to GAE 🚀
+        uses: google-github-actions/deploy-appengine@v0.3.0
+        with:
+          credentials: ${{ secrets.GCP_SA_KEY }}
+          working_directory: ${{ github.workspace }}/server/dist/server
+          deliverables: 'app.yaml'
+
