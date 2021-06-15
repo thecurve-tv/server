@@ -17,6 +17,7 @@ const accountSchema = new Schema(
       unique: true,
       match: emailRegex
     },
+    // Remember to update Guards that redact fields when you add fields here
     ...defaultProperties
   },
   defaultOptions
