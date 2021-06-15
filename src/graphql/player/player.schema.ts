@@ -1,14 +1,17 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IPlayer } from '../../model/player'
+import IsOwnAccountGuard from '../account/is-own-account.guard'
 import { ResolverContext } from '../graphql'
 import { guardResolver } from '../guard'
 import { AccountTC, GameTC, PhotoTC, PlayerTC } from '../types'
 import CanEditPlayerGuard from './can-edit-player.guard'
+import ContainsOnlyCommonPlayersGuard from './contains-only-common-players.guard'
 import { PlayerChatsRelationResolver } from './player.resolver'
 
 // normalised relations
 PlayerTC.addRelation('account', {
-  resolver: () => AccountTC.mongooseResolvers.findById(),
+  // can only view _ids of the related account if this player is not yours
+  resolver: () => guardResolver(AccountTC.mongooseResolvers.findById(), new IsOwnAccountGuard(true)),
   prepareArgs: {
     _id: player => player.account
   },
@@ -38,6 +41,7 @@ PlayerTC.addRelation('chats', {
 })
 
 export const playerQueries: ObjectTypeComposerFieldConfigMapDefinition<IPlayer, ResolverContext> = {
+  playerMany: guardResolver(PlayerTC.mongooseResolvers.findMany(), new ContainsOnlyCommonPlayersGuard())
 }
 
 export const playerMutations: ObjectTypeComposerFieldConfigMapDefinition<IPlayer, ResolverContext> = {
