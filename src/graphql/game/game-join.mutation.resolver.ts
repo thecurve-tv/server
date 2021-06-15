@@ -31,11 +31,8 @@ export default schemaComposer.createResolver<any, GameJoinMutationResolverArgs>(
   },
   resolve: async ({ args, context }) => {
     const now = Date.now()
-    const activeGame = await Game.findOne({
-      _id: args._id,
-      $and: [{ endTime: { $gt: now } }, { pausedTime: { $eq: undefined } }]
-    })
-    if (!activeGame) throw new GraphErrorResponse(400, 'There is no ongoing game with that id. It is possible the game has ended or is paused.')
+    const throwIfActiveGameNotFound = true
+    const activeGame = await getActiveGame(args._id, now, throwIfActiveGameNotFound)
     const existingPlayer = await Player.findOne({ game: activeGame._id, account: context.account?._id }, { _id: 1 })
     if (existingPlayer) throw new GraphErrorResponse(403, 'You are already a player in this game.')
     const playerCount = await Player.countDocuments({ game: activeGame._id })
@@ -74,3 +71,22 @@ export default schemaComposer.createResolver<any, GameJoinMutationResolverArgs>(
     return result
   }
 })
+
+/**
+ * A game that doesn't exist is considered inactive.
+ * A game that is paused is inactive.
+ * A game that has ended is inactive.
+ * @returns 'null' if no active game was found
+ * @throws 'GraphErrorResponse' if `throwIfActiveGameNotFound == true` & no active game was found
+ */
+export async function getActiveGame(_id: IGame['_id'], now: number, throwIfActiveGameNotFound: true): Promise<IGame>
+export async function getActiveGame(_id: IGame['_id'], now: number, throwIfActiveGameNotFound: boolean): Promise<IGame | null> {
+  const game = await Game.findOne({
+    _id,
+    $and: [{ endTime: { $gt: now } }, { pausedTime: { $eq: undefined } }]
+  })
+  if (throwIfActiveGameNotFound && !game) {
+    throw new GraphErrorResponse(400, 'There is no ongoing game with that id. It is possible the game has ended or is paused.')
+  }
+  return game
+}
