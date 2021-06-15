@@ -1,7 +1,7 @@
 import { schemaComposer } from 'graphql-compose'
 import { accountQueries } from './account/account.schema'
 import { chatPlayerQueries } from './chat/chat-player.schema'
-import { chatQueries } from './chat/chat.schema'
+import { chatMutations, chatQueries } from './chat/chat.schema'
 import { gameMutations, gameQueries } from './game/game.schema'
 import { photoQueries } from './photo/photo.schema'
 import { playerMutations, playerQueries } from './player/player.schema'
@@ -12,14 +12,15 @@ import { playerMutations, playerQueries } from './player/player.schema'
 
 schemaComposer.Query.addFields({
   ...accountQueries,
-  ...chatQueries,
   ...chatPlayerQueries,
+  ...chatQueries,
   ...gameQueries,
   ...playerQueries,
   ...photoQueries
 })
 
 schemaComposer.Mutation.addFields({
+  ...chatMutations,
   ...gameMutations,
   ...playerMutations
 })

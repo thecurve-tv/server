@@ -1,8 +1,11 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IChat } from '../../model/chat'
 import { ResolverContext } from '../graphql'
+import { guardResolver } from '../guard'
 import { ChatTC, GameTC } from '../types'
+import chatCreateMutationResolver from './chat-create.mutation.resolver'
 import chatPlayersRelationResolver from './chat-players.relation.resolver'
+import ContainsOnlyOwnChatsGuard from './contains-only-own-chats.guard'
 
 // normalised relations
 ChatTC.addRelation('game', {
@@ -22,4 +25,9 @@ ChatTC.addRelation('players', {
 })
 
 export const chatQueries: ObjectTypeComposerFieldConfigMapDefinition<IChat, ResolverContext> = {
+  chatMany: guardResolver(ChatTC.mongooseResolvers.findMany(), new ContainsOnlyOwnChatsGuard())
+}
+
+export const chatMutations: ObjectTypeComposerFieldConfigMapDefinition<IChat, ResolverContext> = {
+  chatCreate: chatCreateMutationResolver
 }
