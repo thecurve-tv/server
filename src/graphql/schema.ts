@@ -1,14 +1,13 @@
-import { schemaComposer } from 'graphql-compose'
+import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { accountQueries } from './account/account.schema'
 import { chatPlayerQueries } from './chat/chat-player.schema'
 import { chatMutations, chatQueries } from './chat/chat.schema'
 import { gameMutations, gameQueries } from './game/game.schema'
+import { ResolverContext } from "./resolver-context"
 import { photoQueries } from './photo/photo.schema'
 import { playerMutations, playerQueries } from './player/player.schema'
 
-// TODO verify account id on all requests
-// TODO protect this resolver, users can only fetch their own account
-// TODO: Handle transactions & errors in mutation sequences
+const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 
 schemaComposer.Query.addFields({
   ...accountQueries,

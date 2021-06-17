@@ -3,7 +3,7 @@ import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compo
 import { Account, IAccount } from '../../model/account'
 import { Game, IGame } from '../../model/game'
 import { IPlayer, Player } from '../../model/player'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 

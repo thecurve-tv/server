@@ -7,7 +7,8 @@ import { IGame } from '../../model/game'
 import { IPlayer, Player } from '../../model/player'
 import { IDraftDocument } from '../../model/_defaults'
 import { getActiveGame } from '../game/game-join.mutation.resolver'
-import { GraphErrorResponse, ResolverContext } from '../graphql'
+import { GraphErrorResponse } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { MongoID } from '../mongoose-resolvers'
 import { ChatPlayerTC, ChatTC } from '../types'
 

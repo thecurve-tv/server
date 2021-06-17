@@ -1,7 +1,8 @@
 import { ObjectId } from 'bson'
 import { IGame } from '../../model/game'
 import { IPlayer, Player } from '../../model/player'
-import { GraphErrorResponse, ResolverContext } from '../graphql'
+import { GraphErrorResponse } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { UpdateByIdArgs } from '../mongoose-resolvers'
 

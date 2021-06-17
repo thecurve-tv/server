@@ -1,7 +1,8 @@
 import { ObjectId } from 'bson'
 import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { Game } from '../../model/game'
-import { GraphErrorResponse, ResolverContext } from '../graphql'
+import { GraphErrorResponse } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { GameTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer

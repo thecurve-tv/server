@@ -1,5 +1,5 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { IChatPlayer } from '../../model/chatPlayer'
 import { ChatTC, ChatPlayerTC, PlayerTC } from '../types'
 

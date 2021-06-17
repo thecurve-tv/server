@@ -1,6 +1,6 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IChat } from '../../model/chat'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { guardResolver } from '../guard'
 import { ChatTC, GameTC } from '../types'
 import chatCreateMutationResolver from './chat-create.mutation.resolver'

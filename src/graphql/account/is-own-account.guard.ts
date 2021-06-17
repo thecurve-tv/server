@@ -1,5 +1,5 @@
 import { IAccount } from '../../model/account'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindByIdArgs } from '../mongoose-resolvers'
 

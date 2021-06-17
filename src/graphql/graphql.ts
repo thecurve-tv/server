@@ -5,10 +5,7 @@ import { environment } from '../environment'
 import { ensureAuthenticated, getAccessToken } from '../util/security'
 import { AuthenticatedRequest, errorResponse, fetchAccount } from '../util/session'
 import { Account, IAccount } from '../model/account'
-
-export interface ResolverContext extends ExpressContext {
-  account: IAccount & { _id: NonNullable<IAccount['_id']> } // we assert that _id will always be available
-}
+import { ResolverContext } from './resolver-context'
 
 export class GraphErrorResponse extends ApolloError {
   constructor(statusCode: number, description: string, data?: any) {

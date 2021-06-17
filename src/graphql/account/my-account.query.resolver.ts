@@ -1,6 +1,6 @@
 import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { Account } from '../../model/account'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { AccountTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer

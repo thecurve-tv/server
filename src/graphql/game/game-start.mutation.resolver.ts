@@ -6,7 +6,8 @@ import { Game, IGame } from '../../model/game'
 import { IPlayer, Player } from '../../model/player'
 import { IDraftDocument } from '../../model/_defaults'
 import { MAX_GAME_DURATION, MIN_GAME_DURATION } from '../../util/rules'
-import { GraphErrorResponse, ResolverContext } from '../graphql'
+import { GraphErrorResponse } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { GameTC, PlayerTC, ChatTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer

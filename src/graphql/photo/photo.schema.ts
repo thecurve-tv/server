@@ -1,6 +1,6 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IPhoto } from '../../model/photo'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { PhotoTC, PlayerTC } from '../types'
 
 // normalised relations

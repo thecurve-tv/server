@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson'
 import { IPlayer, Player } from '../../model/player'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindManyArgs } from '../mongoose-resolvers'
 
