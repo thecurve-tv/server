@@ -20,18 +20,22 @@ export interface SearchArgs {
 /**
  * Must be used after authenticating a request
  */
-export function fetchAccount(verifyExists = false, projection: any = { _log: 0 }) {
-  const handler: RequestHandler = (req: AuthenticatedRequest, res, next) => {
-    const auth0Id = req.user?.sub
-    Account.findOne({ auth0Id }, projection)
+export function fetchAccount(verifyExists = false, projection: any = { _log: 0 }): RequestHandler {
+  return (req: AuthenticatedRequest, res, next) => {
+    const onFail = () => errorResponse(404, 'Failed to get an account with that access token', res)
+    if (!req.user) return onFail()
+    fetchAccountUsingJwtPayload(req.user, projection)
       .then(account => {
-        if (verifyExists && !account) return errorResponse(404, 'Failed to get an account with that access token', res)
+        if (verifyExists && !account) return onFail()
         req.account = account || undefined
         next()
       })
       .catch(next)
   }
-  return handler
+}
+
+export async function fetchAccountUsingJwtPayload(payload: JwtRequestUser, projection: any = { _log: 0 }): Promise<IAccount | null> {
+  return await Account.findOne({ auth0Id: payload?.sub }, projection)
 }
 
 /**
