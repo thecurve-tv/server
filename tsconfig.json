@@ -5,7 +5,11 @@
     "outDir": "./dist/server",
     "allowJs": true,
     "target": "es6",
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
+    "baseUrl": ".",
+    "paths": {
+      "graphql-google-pubsub": ["src/graphql-google-pubsub/src"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
