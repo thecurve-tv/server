@@ -1,3 +1,0 @@
-[submodule "graphql-google-pubsub"]
-	path = src/graphql-google-pubsub
-	url = git@github.com:DeveloperRic/graphql-google-pubsub.git
