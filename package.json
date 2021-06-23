@@ -10,6 +10,7 @@
     "start": "cd src && ts-node bin/www"
   },
   "dependencies": {
+    "@google-cloud/pubsub": "^2.14.0",
     "apollo-server-express": "^2.24.0",
     "auth0": "^2.34.2",
     "bson": "^4.4.0",
