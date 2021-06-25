@@ -1,5 +1,6 @@
 import { PubSub, Subscription, Message } from '@google-cloud/pubsub'
 import { PubSubEngine } from 'apollo-server-express'
+import { GooglePubSubAsyncIterator } from './async-iterator'
 
 class FreezingMap<K, V> extends Map<K, V | undefined> {
   set(key: K, value?: V): this {
@@ -23,8 +24,6 @@ class SubscriptionTracker {
     return subscriptionNumber
   }
 
-  get(subscriptionName: string): Subscription | undefined
-  get(subscriptionNumber: number): Subscription | undefined
   get(subscriptionNameOrNumber: number | string): Subscription | undefined {
     const usingSubscriptionNumber = typeof subscriptionNameOrNumber === 'number'
     const subscriptionNumber = usingSubscriptionNumber ? <number>subscriptionNameOrNumber : this.nameToSubscriptionNumber.get(<string>subscriptionNameOrNumber)
@@ -45,14 +44,23 @@ class SubscriptionTracker {
   }
 }
 
+export interface GooglePubSubSubscribeOptions {
+  labels?: { [k: string]: string }
+  filter?: SubscriptionFilter
+  messageExpirationSeconds?: number
+  deleteExistingSubscription?: boolean
+}
+
+export interface GooglePubSubPublishOptions {
+  payload: { [k: string]: any }
+  attributes?: { [k: string]: string }
+}
+
 export interface GooglePubSubConfig {
   projectId: string
   /** Note: this is NOT the full topicName (i.e. should not follow the pattern "projects/{project}/topics/{topic}") */
   topicId: string
-  labels?: { [k: string]: string }
-  filter?: SubscriptionFilter
   orderingKey?: string
-  messageExpirationSeconds?: number
 }
 
 /**
@@ -77,12 +85,15 @@ export interface SubscriptionFilter {
 }
 
 /**
+ * PubSubEngine for the Google PubSub API.
+ * Use a separate instance for separate topics.
+ *
  * Some definitions:
  * * `itemId`: the short-form (so to speak) name of the item (e.g. chat-messages for the ChatMessages Topic)
  * * `itemName`: the actual name of the item (e.g. projects/{projectId}/topics/chat-messages)
  * * `subscriptionNumber`: [internal] tracking number that should never be used outside of the instance where it was obtained
  */
-export class GooglePubSub extends PubSubEngine {
+export class GooglePubSub implements PubSubEngine {
   private readonly client = new PubSub()
   private readonly subscriptions = new SubscriptionTracker()
   private readonly topicName: string
@@ -90,68 +101,95 @@ export class GooglePubSub extends PubSubEngine {
   constructor(
     public readonly config: Readonly<GooglePubSubConfig>
   ) {
-    super()
     this.topicName = `projects/${this.config.projectId}/topics/${this.config.topicId}`
   }
 
   /**
    * Start a subscription
    * @param subscriptionId
+   * MUST BE UNIQUE
    * Note: this is NOT the full subscriptionName (i.e. should not follow the pattern "projects/{project}/subscriptions/{subscription}")
    * Must start with a letter, and contain only letters ([A-Za-z]), numbers ([0-9]), dashes (-), underscores (_),
    * periods (.), tildes (~), plus (+) or percent signs (%). It must be between 3 and 255 characters in length,
    * and it must not start with "goog"
-   * @param onMessage
-   * @returns
+   * @returns the subscriptionNumber to be used to identify the subscription ONLY on this instance
+   * @throws
+   * - IF: no saved subscription was found, AND
+   * - a subscription already exists in Google PubSub with an identical identifier, AND
+   * - `options.deleteExistingSubscription` is false
    */
-  async subscribe(subscriptionId: string, onMessage: Function): Promise<number> {
+  async subscribe(
+    subscriptionId: string,
+    onMessageOrClose: (done: boolean, message?: Message) => Promise<void>,
+    options: GooglePubSubSubscribeOptions
+  ): Promise<number> {
     const subscriptionName = this.getSubscriptionName(subscriptionId)
-    const subscription = await this.getSubscription(subscriptionName)
+    const subscription = await this.getSubscription(subscriptionName, options)
     const subscriptionNumber = this.subscriptions.getSubscriptionNumber(subscriptionName)
     if (!subscriptionNumber) throw new Error('subscriptionNumber was unexpectedly falsy')
-    subscription.on('message', (message: Message) => {
-      message.ack()
+    subscription.on('message', async (message: Message) => {
       try {
-        const data = JSON.parse(message.data.toString())
-        onMessage(data)
+        await onMessageOrClose(false, message)
+      } catch (err) {
+        console.error(err)
+        message.nack()
+      }
+    })
+    subscription.on('error', async err => {
+      console.error(err)
+      await this.endSubscription(subscription, subscriptionNumber)
+    })
+    subscription.on('close', async () => {
+      try {
+        await onMessageOrClose(true)
       } catch (err) {
         console.error(err)
       }
     })
-    subscription.on('error', err => {
-      console.error(err)
-      this.endSubscription(subscriptionNumber, subscription)
-    })
     return subscriptionNumber
   }
 
-  unsubscribe(subscriptionNumber: number) {
+  async unsubscribe(subscriptionNumber: number) {
     const subscription = this.subscriptions.get(subscriptionNumber)
     if (!subscription) throw new Error('There is no subscription with that number')
-    this.endSubscription(subscriptionNumber, subscription)
+    await this.endSubscription(subscription, subscriptionNumber)
+  }
+
+  /**
+   * Subscribe to the (already provided) topic.
+   * Labels, filters, etc. can only be set if you use {@link GooglePubSub.asyncIteratorWithOptions}
+   * @param subscriptionIds see {@link GooglePubSub.subscribe} for the meaning of `subscriptionId`
+   */
+  asyncIterator<T>(subscriptionId: string): GooglePubSubAsyncIterator<T> {
+    return new GooglePubSubAsyncIterator(this, subscriptionId, {})
   }
 
   /**
    * Subscribe to the (already provided) topic
    * @param subscriptionIds see {@link GooglePubSub.subscribe} for the meaning of `subscriptionId`
    */
-  asyncIterator<T>(subscriptionIds: string[]): AsyncIterator<T> {
-    return super.asyncIterator(subscriptionIds)
+  asyncIteratorWithOptions<T>(subscriptionId: string, options: GooglePubSubSubscribeOptions): GooglePubSubAsyncIterator<T> {
+    return new GooglePubSubAsyncIterator(this, subscriptionId, options)
   }
 
   /**
    * Publish a new message.
    * Attributes are automatically calculated based on the payload keys and values (values are converted to `string` via interpolation).
    * For best results, ensure your payload values can be accurately converted to `string`
+   * You may also explicitly provide your own attributes.
    * @param _triggerName THIS PARAMETER IS NOT USED. Specify a topic in {@link GooglePubSub} constructor
-   * @param payload whatever you want to send
    */
-  async publish(_triggerName: string, payload: { [k: string]: any }): Promise<void> {
+  async publish(_triggerName: string, options: GooglePubSubPublishOptions): Promise<void> {
     const topic = this.client.topic(this.topicName)
-    const attributes: { [key: string]: string } = {}
-    Object.entries(payload).forEach(([key, value]) => attributes[key] = `${value}`)
+    let attributes: { [key: string]: string }
+    if (options.attributes) {
+      attributes = options.attributes
+    } else {
+      attributes = {}
+      Object.entries(options.payload).forEach(([key, value]) => attributes[key] = `${value}`)
+    }
     await topic.publishMessage({
-      json: payload,
+      json: options.payload,
       attributes,
       orderingKey: this.config.orderingKey
     })
@@ -161,26 +199,35 @@ export class GooglePubSub extends PubSubEngine {
     return `projects/${this.config.projectId}/subscriptions/${subscriptionId}`
   }
 
-  private async getSubscription(subscriptionName: string): Promise<Subscription> {
+  /**
+   * Gets the subscription saved in memory or creates a new subscription if none was saved.
+   * @param subscriptionName MUST be unique
+   * @throws
+   * - IF: no saved subscription was found, AND
+   * - a subscription already exists in Google PubSub with an identical identifier, AND
+   * - `options.deleteExistingSubscription` is false
+   */
+  private async getSubscription(subscriptionName: string, options: GooglePubSubSubscribeOptions): Promise<Subscription> {
     const savedSubscription = this.subscriptions.get(subscriptionName)
     if (savedSubscription) return savedSubscription
     const topic = this.client.topic(this.topicName)
     const subscription = topic.subscription(subscriptionName)
     const [exists] = await subscription.exists()
     if (exists) {
-      const subscriptionIsNotBeingTracked = !this.subscriptions.get(subscription.name)
-      if (subscriptionIsNotBeingTracked) this.subscriptions.add(subscription)
-      return subscription
+      if (!options.deleteExistingSubscription) {
+        throw new Error(`A subscription already exists with the name ${subscriptionName}`)
+      }
+      await this.endSubscription(subscription)
     }
-    return await this.createSubscription(subscriptionName)
+    return await this.createSubscription(subscriptionName, options)
   }
 
-  private async createSubscription(subscriptionName: string): Promise<Subscription> {
+  private async createSubscription(subscriptionName: string, options: GooglePubSubSubscribeOptions): Promise<Subscription> {
     const [subscription] = await this.client.createSubscription(this.topicName, subscriptionName, {
-      labels: this.config.labels,
+      labels: options.labels,
       enableMessageOrdering: !!this.config.orderingKey,
-      expirationPolicy: { ttl: { seconds: this.config.messageExpirationSeconds || 24 * 60 * 60 } },
-      filter: this.config.filter ? this.convertFilterToString(this.config.filter) : undefined
+      expirationPolicy: { ttl: { seconds: options.messageExpirationSeconds || 24 * 60 * 60 } },
+      filter: options.filter ? this.convertFilterToString(options.filter) : undefined
     })
     this.subscriptions.add(subscription)
     return subscription
@@ -206,9 +253,13 @@ export class GooglePubSub extends PubSubEngine {
     return query
   }
 
-  private endSubscription(subscriptionNumber: number, subscription: Subscription): void {
-    subscription.close()
-    subscription.delete()
-    this.subscriptions.unlink(subscriptionNumber)
+  /**
+   * Closes & deletes the subscription.
+   * If `subscriptionNumber` is provided, also removes the subscription from the set of saved subscriptions
+   */
+  private async endSubscription(subscription: Subscription, subscriptionNumber?: number): Promise<void> {
+    await subscription.close()
+    await subscription.delete()
+    if (subscriptionNumber) this.subscriptions.unlink(subscriptionNumber)
   }
 }
