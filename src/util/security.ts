@@ -52,9 +52,9 @@ export function verifyJwt(token: string, requiredScopes?: string[]): Promise<Jwt
         issuer: [`${environment.AUTH0_DOMAIN}/`],
         algorithms: ['RS256']
       },
-      (err, payload) => {
+      async (err, payload) => {
         if (err) return reject(err)
-        if (requiredScopes) verifyJwtScopes(requiredScopes, payload?.scope)
+        if (requiredScopes) await verifyJwtScopes(requiredScopes, payload?.scope)
         resolve(payload)
       }
     )
@@ -105,6 +105,7 @@ const checkJwt: RequestHandler = (req: AuthenticatedRequest, _res, next) => {
   verifyJwt(accessToken)
     .then(payload => {
       req.user = payload
+      next()
     })
     .catch(next)
 }
