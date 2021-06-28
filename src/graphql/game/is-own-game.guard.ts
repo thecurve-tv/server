@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { IAccount } from '../../model/account'
 import { IGame } from '../../model/game'
 import { Player } from '../../model/player'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindByIdArgs } from '../mongoose-resolvers'
 

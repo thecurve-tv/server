@@ -2,13 +2,10 @@ import { ApolloError, ApolloServer, AuthenticationError, ExpressContext } from '
 import { RequestHandler, Response } from 'express'
 import Schema from './schema'
 import { environment } from '../environment'
-import { ensureAuthenticated, getAccessToken } from '../util/security'
-import { AuthenticatedRequest, errorResponse, fetchAccount } from '../util/session'
+import { ensureAuthenticated, getAccessToken, getAccessTokenFromGenericObject, verifyJwt } from '../util/security'
+import { AuthenticatedRequest, errorResponse, fetchAccount, fetchAccountUsingJwtPayload } from '../util/session'
 import { Account, IAccount } from '../model/account'
-
-export interface ResolverContext extends ExpressContext {
-  account: IAccount & { _id: NonNullable<IAccount['_id']> } // we assert that _id will always be available
-}
+import { ResolverContext } from './resolver-context'
 
 export class GraphErrorResponse extends ApolloError {
   constructor(statusCode: number, description: string, data?: any) {
@@ -27,16 +24,13 @@ export function getGraphQLMiddleware() {
   })
 }
 
-async function getGraphQLContext({ req, res }: ExpressContext): Promise<ResolverContext> {
-  const defaultContext = { req: req, res }
+async function getGraphQLContext(context: ExpressContext): Promise<ResolverContext> {
+  const defaultContext: Omit<ResolverContext, 'account'> = { req: context.req, res: context.res }
   let account: IAccount | null
   try {
-    account = await authenticateGraphRequest(req, res)
-    const attemptDevAccount = !account && !environment.PROD && environment.DEV_ACCOUNT_ID && !getAccessToken(req)
-    if (attemptDevAccount) {
-      account = await Account.findById(environment.DEV_ACCOUNT_ID, { _id: 1 })
-    }
+    account = await getAccountFromExpressContext(context)
   } catch (err) {
+    // Only execution errors are caught here. Authentication errors simply result in `account === null`
     if (!environment.PROD) console.error('GraphQL Authentication broke!', err)
     throw new GraphErrorResponse(500, err.message || 'GraphQL Authentication broke!')
   }
@@ -44,7 +38,26 @@ async function getGraphQLContext({ req, res }: ExpressContext): Promise<Resolver
   return { ...defaultContext, account }
 }
 
-async function authenticateGraphRequest(req: AuthenticatedRequest, res: Response) {
+async function getAccountFromExpressContext({ connection, req, res }: ExpressContext): Promise<IAccount | null> {
+  let accessToken: string | undefined
+  let account: IAccount | null
+  if (connection) {
+    // Operation is a Subscription
+    accessToken = getAccessTokenFromGenericObject(connection.context)
+    account = await authenticateSubscription(accessToken)
+  } else {
+    // Operation is a Query/Mutation
+    accessToken = getAccessToken(req)
+    account = await authenticateGraphRequest(req, res)
+  }
+  const attemptDevAccount = !account && !environment.PROD && environment.DEV_ACCOUNT_ID && !accessToken
+  if (attemptDevAccount) {
+    account = await Account.findById(environment.DEV_ACCOUNT_ID, { _id: 1 })
+  }
+  return account
+}
+
+async function authenticateGraphRequest(req: AuthenticatedRequest, res: Response): Promise<IAccount | null> {
   const authenticationChain = ensureAuthenticated()
   const executeRequestHandler = (handler: RequestHandler) => {
     return new Promise<boolean>((resolve, reject) => {
@@ -71,4 +84,16 @@ async function authenticateGraphRequest(req: AuthenticatedRequest, res: Response
   let responseSent = await executeRequestHandler(fetchAccountHandler)
   if (responseSent) return null
   return req.account || null
+}
+
+async function authenticateSubscription(accessToken: string | undefined): Promise<IAccount | null> {
+  if (!accessToken) return null
+  try {
+    const payload = await verifyJwt(accessToken)
+    if (!payload) return null
+    const account = await fetchAccountUsingJwtPayload(payload)
+    return account
+  } catch (err) {
+    return null
+  }
 }

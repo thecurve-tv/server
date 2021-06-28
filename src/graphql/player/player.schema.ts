@@ -1,7 +1,7 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IPlayer } from '../../model/player'
 import IsOwnAccountGuard from '../account/is-own-account.guard'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { guardResolver } from '../guard'
 import { AccountTC, GameTC, PhotoTC, PlayerTC } from '../types'
 import CanEditPlayerGuard from './can-edit-player.guard'

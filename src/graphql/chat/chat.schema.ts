@@ -1,11 +1,13 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IChat } from '../../model/chat'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { guardResolver } from '../guard'
 import { ChatTC, GameTC } from '../types'
 import chatCreateMutationResolver from './chat-create.mutation.resolver'
 import chatPlayersRelationResolver from './chat-players.relation.resolver'
 import ContainsOnlyOwnChatsGuard from './contains-only-own-chats.guard'
+import chatMessagesSubscriptionResolver from './chat-messages.subscription.resolver'
+import chatSendMessageMutationResolver from './chat-send-message.mutation.resolver'
 
 // normalised relations
 ChatTC.addRelation('game', {
@@ -29,5 +31,10 @@ export const chatQueries: ObjectTypeComposerFieldConfigMapDefinition<IChat, Reso
 }
 
 export const chatMutations: ObjectTypeComposerFieldConfigMapDefinition<IChat, ResolverContext> = {
-  chatCreate: chatCreateMutationResolver
+  chatCreate: chatCreateMutationResolver,
+  chatSendMessage: chatSendMessageMutationResolver
+}
+
+export const chatSubscriptions: ObjectTypeComposerFieldConfigMapDefinition<IChat, ResolverContext> = {
+  chatMessages: chatMessagesSubscriptionResolver
 }

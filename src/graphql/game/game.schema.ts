@@ -1,6 +1,6 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IGame } from '../../model/game'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { AccountTC, ChatTC, GameTC, PlayerTC } from '../types'
 import { guardResolver } from '../guard'
 import gameStartMutationResolver from './game-start.mutation.resolver'

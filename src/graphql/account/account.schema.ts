@@ -1,6 +1,6 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IAccount } from '../../model/account'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { guardResolver } from '../guard'
 import { AccountTC, PlayerTC } from '../types'
 import IsOwnAccountGuard from './is-own-account.guard'

@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { ChatPlayer, IChatPlayer } from '../../model/chatPlayer'
 import { IPlayer, Player } from '../../model/player'
-import { ResolverContext } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { PlayerTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer

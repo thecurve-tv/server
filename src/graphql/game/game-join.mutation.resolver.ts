@@ -7,7 +7,8 @@ import { Game, IGame } from '../../model/game'
 import { IPlayer, Player } from '../../model/player'
 import { IRoom, Room } from '../../model/room'
 import { IDraftDocument } from '../../model/_defaults'
-import { GraphErrorResponse, ResolverContext } from '../graphql'
+import { GraphErrorResponse } from '../graphql'
+import { ResolverContext } from "../resolver-context"
 import { GameTC, PlayerTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer

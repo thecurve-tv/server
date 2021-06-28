@@ -22,8 +22,8 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(enableCors())
 
-const graphQLServer = getGraphQLMiddleware()
-graphQLServer.applyMiddleware({
+export const apolloServer = getGraphQLMiddleware()
+apolloServer.applyMiddleware({
   app,
   path: '/graphql',
   cors: true,
