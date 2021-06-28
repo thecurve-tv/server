@@ -50,7 +50,6 @@ async function getAccountFromExpressContext({ connection, req, res }: ExpressCon
     accessToken = getAccessToken(req)
     account = await authenticateGraphRequest(req, res)
   }
-  console.log(req?.body?.operationName, req?.headers, req?.query)
   const attemptDevAccount = !account && !environment.PROD && environment.DEV_ACCOUNT_ID && !accessToken
   if (attemptDevAccount) {
     account = await Account.findById(environment.DEV_ACCOUNT_ID, { _id: 1 })
@@ -91,10 +90,8 @@ async function authenticateSubscription(accessToken: string | undefined): Promis
   if (!accessToken) return null
   try {
     const payload = await verifyJwt(accessToken)
-    console.log('done auth chain')
     if (!payload) return null
     const account = await fetchAccountUsingJwtPayload(payload)
-    console.log('done fetch account')
     return account
   } catch (err) {
     return null
