@@ -3,24 +3,39 @@ import { PubSubEngine } from 'apollo-server-express'
 import { GooglePubSubAsyncIterator } from './async-iterator'
 
 class FreezingMap<K, V> extends Map<K, V | undefined> {
-  set(key: K, value?: V): this {
+  /**
+   * Set a key for a value.
+   * If the key already exists and the supplied value is not `undefined`, an error is thrown.
+   * You may free up some memory by setting the value to `undefined`.
+   * This is the only case when a value may be re-supplied.
+   */
+  set(key: K, value: V | undefined): this {
     if (value !== undefined && this.has(key)) {
-      throw new Error('A value already exists for that key')
+      throw new Error(`A value already exists for the key ${key}`)
     }
     return super.set(key, value)
+  }
+
+  /**
+   * Convenience Method. `key` is never deleted (because it is frozen).
+   * This method simply frees up some memory by assigning `undefined` to the value at `key`.
+   * @see {@link FreezingMap.set}
+   */
+  delete(key: K): false {
+    this.set(key, undefined)
+    return false
   }
 }
 
 class SubscriptionTracker {
   private readonly numberToSubscriptionMap = new FreezingMap<number, Subscription>()
-  private readonly nameToSubscriptionNumber = new FreezingMap<string, number>()
+  private readonly nameToSubscriptionNumber = new Map<string, number>()
   private nextSubscriptionNumber = 1
 
   add(subscription: Subscription): number {
-    const subscriptionNumber = this.nextSubscriptionNumber
+    const subscriptionNumber = this.nextSubscriptionNumber++
     this.numberToSubscriptionMap.set(subscriptionNumber, subscription)
     this.nameToSubscriptionNumber.set(subscription.name, subscriptionNumber)
-    this.nextSubscriptionNumber++
     return subscriptionNumber
   }
 
@@ -38,29 +53,35 @@ class SubscriptionTracker {
   /**
    * Frees up some memory by setting `undefined` as the value for the key `subscriptionNumber`.
    * This should only be called once the subscription is deleted.
+   * If this method is called more than once, subsequent calls do nothing.
    */
   unlink(subscriptionNumber: number): void {
-    this.numberToSubscriptionMap.set(subscriptionNumber)
+    const subscription = this.numberToSubscriptionMap.get(subscriptionNumber)
+    if (!subscription) return
+    this.numberToSubscriptionMap.delete(subscriptionNumber)
+    this.nameToSubscriptionNumber.delete(subscription.name)
   }
-}
-
-export interface GooglePubSubSubscribeOptions {
-  labels?: { [k: string]: string }
-  filter?: SubscriptionFilter
-  messageExpirationSeconds?: number
-  deleteExistingSubscription?: boolean
-}
-
-export interface GooglePubSubPublishOptions {
-  payload: { [k: string]: any }
-  attributes?: { [k: string]: string }
 }
 
 export interface GooglePubSubConfig {
   projectId: string
   /** Note: this is NOT the full topicName (i.e. should not follow the pattern "projects/{project}/topics/{topic}") */
   topicId: string
+  /** the name of the Subscription in GraphQL. Used when publishing messages */
+  graphqlSubscriptionName: string
   orderingKey?: string
+}
+
+export interface GooglePubSubSubscribeOptions<TPayload> {
+  labels?: { [k: string]: string }
+  filter?: SubscriptionFilter<TPayload>
+  messageExpirationSeconds?: number
+  deleteExistingSubscription?: boolean
+}
+
+export interface GooglePubSubPublishOptions<TPayload> {
+  payload: TPayload
+  attributes?: { [k: string]: string }
 }
 
 /**
@@ -69,19 +90,19 @@ export interface GooglePubSubConfig {
  * $and, & $or are also mutually exclusive.
  * Not following this will result in undefined behaviour.
  */
-export interface SubscriptionFilter {
+export interface SubscriptionFilter<TPayload> {
   /** attributes:"{hasKey}" */
-  hasKey?: string
+  hasKey?: keyof TPayload
   /** attributes."{keyEquals.key}" = "{keyEquals.value}" */
-  keyEquals?: { key: string, value: string }
+  keyEquals?: { key: keyof TPayload, value: string }
   /** hasPrefix(attributes."{startsWith.key}", "{startsWith.value}") */
-  startsWith?: { key: string, value: string }
+  startsWith?: { key: keyof TPayload, value: string }
   /** NOT | != */
   isNegated?: true
   /** this AND (that) AND (that) AND (that) */
-  $and?: SubscriptionFilter[]
+  $and?: SubscriptionFilter<TPayload>[]
   /** this OR (that) OR (that) OR (that) */
-  $or?: SubscriptionFilter[]
+  $or?: SubscriptionFilter<TPayload>[]
 }
 
 /**
@@ -93,10 +114,15 @@ export interface SubscriptionFilter {
  * * `itemName`: the actual name of the item (e.g. projects/{projectId}/topics/chat-messages)
  * * `subscriptionNumber`: [internal] tracking number that should never be used outside of the instance where it was obtained
  */
-export class GooglePubSub implements PubSubEngine {
+export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubSubEngine {
   private readonly client = new PubSub()
   private readonly subscriptions = new SubscriptionTracker()
   private readonly topicName: string
+  /**
+   * The `_triggerName` param in {@link GooglePubSub.publish} isn't used & can't be removed because of the signature of
+   * {@link PubSubEngine.publish}. So just put this in place so as not to confuse developers.
+   */
+  readonly DEFAULT_PUBLISH_TRIGGER_NAME = ''
 
   constructor(
     public readonly config: Readonly<GooglePubSubConfig>
@@ -121,7 +147,7 @@ export class GooglePubSub implements PubSubEngine {
   async subscribe(
     subscriptionId: string,
     onMessageOrClose: (done: boolean, message?: Message) => Promise<void>,
-    options: GooglePubSubSubscribeOptions
+    options: GooglePubSubSubscribeOptions<TPayload>
   ): Promise<number> {
     const subscriptionName = this.getSubscriptionName(subscriptionId)
     const subscription = await this.getSubscription(subscriptionName, options)
@@ -168,7 +194,7 @@ export class GooglePubSub implements PubSubEngine {
    * Subscribe to the (already provided) topic
    * @param subscriptionIds see {@link GooglePubSub.subscribe} for the meaning of `subscriptionId`
    */
-  asyncIteratorWithOptions<T>(subscriptionId: string, options: GooglePubSubSubscribeOptions): GooglePubSubAsyncIterator<T> {
+  asyncIteratorWithOptions<T>(subscriptionId: string, options: GooglePubSubSubscribeOptions<TPayload>): GooglePubSubAsyncIterator<T> {
     return new GooglePubSubAsyncIterator(this, subscriptionId, options)
   }
 
@@ -179,7 +205,7 @@ export class GooglePubSub implements PubSubEngine {
    * You may also explicitly provide your own attributes.
    * @param _triggerName THIS PARAMETER IS NOT USED. Specify a topic in {@link GooglePubSub} constructor
    */
-  async publish(_triggerName: string, options: GooglePubSubPublishOptions): Promise<void> {
+  async publish(_triggerName: string, options: GooglePubSubPublishOptions<TPayload>): Promise<void> {
     const topic = this.client.topic(this.topicName)
     let attributes: { [key: string]: string }
     if (options.attributes) {
@@ -189,7 +215,9 @@ export class GooglePubSub implements PubSubEngine {
       Object.entries(options.payload).forEach(([key, value]) => attributes[key] = `${value}`)
     }
     await topic.publishMessage({
-      json: options.payload,
+      json: {
+        [this.config.graphqlSubscriptionName]: options.payload
+      },
       attributes,
       orderingKey: this.config.orderingKey
     })
@@ -207,7 +235,7 @@ export class GooglePubSub implements PubSubEngine {
    * - a subscription already exists in Google PubSub with an identical identifier, AND
    * - `options.deleteExistingSubscription` is false
    */
-  private async getSubscription(subscriptionName: string, options: GooglePubSubSubscribeOptions): Promise<Subscription> {
+  private async getSubscription(subscriptionName: string, options: GooglePubSubSubscribeOptions<TPayload>): Promise<Subscription> {
     const savedSubscription = this.subscriptions.get(subscriptionName)
     if (savedSubscription) return savedSubscription
     const topic = this.client.topic(this.topicName)
@@ -222,7 +250,7 @@ export class GooglePubSub implements PubSubEngine {
     return await this.createSubscription(subscriptionName, options)
   }
 
-  private async createSubscription(subscriptionName: string, options: GooglePubSubSubscribeOptions): Promise<Subscription> {
+  private async createSubscription(subscriptionName: string, options: GooglePubSubSubscribeOptions<TPayload>): Promise<Subscription> {
     const [subscription] = await this.client.createSubscription(this.topicName, subscriptionName, {
       labels: options.labels,
       enableMessageOrdering: !!this.config.orderingKey,
@@ -233,7 +261,7 @@ export class GooglePubSub implements PubSubEngine {
     return subscription
   }
 
-  private convertFilterToString(filter: SubscriptionFilter): string {
+  private convertFilterToString(filter: SubscriptionFilter<TPayload>): string {
     let query: string
     if (filter.hasKey) {
       query = `${filter.isNegated ? 'NOT ' : ''}attributes:"${filter.hasKey}"`
@@ -244,7 +272,9 @@ export class GooglePubSub implements PubSubEngine {
     } else {
       throw new Error('A SubscriptionFilter must have one of {hasKey, keyEquals, startsWith}')
     }
-    const getRelatedQueries = (filters: SubscriptionFilter[]): string[] => filters.map(filter => `(${this.convertFilterToString(filter)})`)
+    const getRelatedQueries = (filters: SubscriptionFilter<TPayload>[]): string[] => {
+      return filters.map(filter => `(${this.convertFilterToString(filter)})`)
+    }
     if (filter.$and && filter.$and.length != 0) {
       query = `${query} AND ${getRelatedQueries(filter.$and).join('AND')}`
     } else if (filter.$or && filter.$or.length != 0) {
@@ -254,12 +284,14 @@ export class GooglePubSub implements PubSubEngine {
   }
 
   /**
-   * Closes & deletes the subscription.
-   * If `subscriptionNumber` is provided, also removes the subscription from the set of saved subscriptions
+   * Closes & deletes the subscription. Then removed the subscription from the set of saved subscriptions
+   * If `subscriptionNumber` is not provided, if there is a saved subscription with the same name as the
+   * subscription to be ended, that saved subscription will be removed (forgotten).
    */
   private async endSubscription(subscription: Subscription, subscriptionNumber?: number): Promise<void> {
     await subscription.close()
     await subscription.delete()
-    if (subscriptionNumber) this.subscriptions.unlink(subscriptionNumber)
+    const subscriptionNumberToRemove = subscriptionNumber || this.subscriptions.getSubscriptionNumber(subscription.name)
+    if (subscriptionNumberToRemove) this.subscriptions.unlink(subscriptionNumberToRemove)
   }
 }

@@ -68,15 +68,19 @@ class ReactiveDoubleEndedQueue<T> {
 /**
  * A separate instance should be used for separate subscribers.
  */
-export class GooglePubSubAsyncIterator<T> implements AsyncIterator<T> {
+export class GooglePubSubAsyncIterator<TPayload> implements AsyncIterator<TPayload> {
   private subscriptionNumber$: Observable<number>
-  private messageQueue: ReactiveDoubleEndedQueue<IteratorResult<T>>
+  private messageQueue: ReactiveDoubleEndedQueue<IteratorResult<TPayload>>
   private isRunning: boolean
 
   constructor(
-    private engine: GooglePubSub,
+    /**
+     * another case of dumb method signatures in {@link PubsubEngine.asyncIterator} where the inferred type `T` is required.
+     * so we use `any` to circumvent this restriction
+     */
+    private engine: GooglePubSub<any>,
     private subscriptionId: string,
-    options: GooglePubSubSubscribeOptions
+    options: GooglePubSubSubscribeOptions<any>
   ) {
     this.isRunning = true
     this.subscriptionNumber$ = of(undefined).pipe(
@@ -93,20 +97,20 @@ export class GooglePubSubAsyncIterator<T> implements AsyncIterator<T> {
     return this
   }
 
-  public async next(): Promise<IteratorResult<T>> {
+  public async next(): Promise<IteratorResult<TPayload>> {
     // get the subscription number (starts/joins a subscription if there is none already present)
     return await firstValueFrom(
       this.subscriptionNumber$.pipe(
         take(1),
         switchMap(_ => {
-          return new Promise<IteratorResult<T>>(resolve => this.messageQueue.consume(resolve))
+          return new Promise<IteratorResult<TPayload>>(resolve => this.messageQueue.consume(resolve))
         })
       ),
       { defaultValue: { value: undefined, done: true } }
     )
   }
 
-  public async return(): Promise<IteratorResult<T>> {
+  public async return(): Promise<IteratorResult<TPayload>> {
     await this.emptyMessageQueue()
     return { value: undefined, done: true }
   }
@@ -121,7 +125,7 @@ export class GooglePubSubAsyncIterator<T> implements AsyncIterator<T> {
       return await this.emptyMessageQueue()
     }
     try {
-      const data: T = JSON.parse(message.data.toString())
+      const data: TPayload = JSON.parse(message.data.toString())
       this.messageQueue.supply(this.isRunning
         ? { value: data, done: false }
         : { value: undefined, done: true },
