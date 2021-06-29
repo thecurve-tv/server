@@ -6,12 +6,13 @@ import { IChat, Chat } from '../../model/chat'
 import { Game, IGame } from '../../model/game'
 import { IPlayer, Player } from '../../model/player'
 import { IDraftDocument } from '../../model/_defaults'
-import { MAX_GAME_DURATION, MIN_GAME_DURATION } from '../../util/rules'
 import { GraphErrorResponse } from '../graphql'
 import { ResolverContext } from "../resolver-context"
 import { GameTC, PlayerTC, ChatTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
+const MIN_GAME_DURATION = 3 * 60 * 60 * 1000 // 3 hours
+const MAX_GAME_DURATION = 5 * 60 * 60 * 1000 // 5 hours
 
 export interface GameStartMutationResolverArgs {
   hostPlayerName: string
