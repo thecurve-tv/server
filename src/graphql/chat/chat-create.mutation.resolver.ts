@@ -76,19 +76,18 @@ async function resolveChatCreateMutation(
       player: new ObjectId(playerId)
     }
   })
-  const session = await startSession()
-  let result: ChatCreateMutationResolverResult | unknown = null
-  const transaction: Promise<void> = Promise.all([
-    Chat.create([chatDoc], { session }),
-    ChatPlayer.create(chatPlayerDocs, { session })
-  ])
-    .then(([[chat], chatPlayers]) => {
+  let result: ChatCreateMutationResolverResult | unknown
+  await (await startSession()).withTransaction(async session => {
+    await Promise.all([
+      Chat.create([chatDoc], { session }),
+      ChatPlayer.create(chatPlayerDocs, { session })
+    ]).then(([[chat], chatPlayers]) => {
       result = {
         chat,
         chatPlayers
       }
     })
-  await session.withTransaction(() => transaction)
+  })
   return <ChatCreateMutationResolverResult>result
 }
 
