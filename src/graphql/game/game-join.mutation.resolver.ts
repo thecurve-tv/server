@@ -109,12 +109,20 @@ async function validateGameJoinMutation(args: GameJoinMutationResolverArgs, acco
  * @returns 'null' if no active game was found
  * @throws 'GraphErrorResponse' if `throwIfActiveGameNotFound == true` & no active game was found
  */
-export async function getActiveGame(_id: IGame['_id'], now: number, throwIfActiveGameNotFound: true): Promise<IGame>
-export async function getActiveGame(_id: IGame['_id'], now: number, throwIfActiveGameNotFound: boolean): Promise<IGame | null> {
-  const game = await Game.findOne({
-    _id,
-    $and: [{ endTime: { $gt: now } }, { pausedTime: { $eq: undefined } }]
-  })
+export async function getActiveGame(_id: IGame['_id'], now: number, throwIfActiveGameNotFound: true, projection?: { [k: string]: number }): Promise<IGame>
+export async function getActiveGame(
+  _id: IGame['_id'],
+  now: number,
+  throwIfActiveGameNotFound: boolean,
+  projection?: { [k: string]: number }
+): Promise<IGame | null> {
+  const game = await Game.findOne(
+    {
+      _id,
+      $and: [{ endTime: { $gt: now } }, { pausedTime: { $eq: undefined } }]
+    },
+    projection
+  )
   if (throwIfActiveGameNotFound && !game) {
     throw new GraphErrorResponse(400, 'There is no ongoing game with that id. It is possible the game has ended or is paused.')
   }

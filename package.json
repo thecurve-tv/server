@@ -7,7 +7,7 @@
     "build": "tsc && cp package*.json src/.env dist/server",
     "lint": "prettier -c .",
     "format": "prettier --write .",
-    "start": "cd src && ts-node bin/www"
+    "start": "cd src && ts-node bin/www --unhandled-rejections=strict"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.14.0",

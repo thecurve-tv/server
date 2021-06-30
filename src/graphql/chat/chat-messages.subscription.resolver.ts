@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson'
 import { GraphQLFieldResolver } from 'graphql'
 import { SchemaComposer, ObjectTypeComposerFieldConfigDefinition, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { environment } from '../../environment'
@@ -50,7 +51,7 @@ const resolveChatMessagesSubscription: GraphQLFieldResolver<unknown, ResolverCon
   /**
    * Validate:
    * - $chat must exist
-   * - $requester must be a player in the chat
+   * - requester must be the host OR a player in the chat
    * - $game must be active
    * Do:
    * - $start unique subscription (deleting existing)
@@ -77,7 +78,13 @@ async function validateChatMessagesSubscription(
     throw new GraphErrorResponse(400, 'There is no chat with that id')
   }
   const throwIfActiveGameNotFound = true
-  await getActiveGame(chat.game, now, throwIfActiveGameNotFound)
+  const game = await getActiveGame(chat.game, now, throwIfActiveGameNotFound, {hostAccount: 1})
+  const requesterIsHost = accountId.toHexString() == (<ObjectId>game.hostAccount).toHexString()
+  if (requesterIsHost) {
+    const player = await Player.findOne({game: game._id, account: accountId}, {_id: 1})
+    if (!player) throw new GraphErrorResponse(500, 'We failed to get your player id based on your account id')
+    return [chat, player._id]
+  }
   const aggregationResult: { player: { _id: IPlayer['_id'] } }[] = await ChatPlayer.aggregate([
     { $match: { chat: chat._id } },
     {
