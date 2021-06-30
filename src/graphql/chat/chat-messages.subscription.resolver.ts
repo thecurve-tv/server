@@ -41,7 +41,7 @@ export const pubsub = new GooglePubSub<ChatMessage>({
   orderingKey: 'chat-messages'
 })
 
-const chatMessagesSubscriptionResolver: GraphQLFieldResolver<unknown, ResolverContext, ChatMessagesSubscriptionResolverArgs> = async (
+const resolveChatMessagesSubscription: GraphQLFieldResolver<unknown, ResolverContext, ChatMessagesSubscriptionResolverArgs> = async (
   _source,
   args,
   context,
@@ -103,5 +103,5 @@ export default <ObjectTypeComposerFieldConfigDefinition<unknown, ResolverContext
   args: {
     chatId: 'MongoID!'
   },
-  subscribe: chatMessagesSubscriptionResolver
+  subscribe: resolveChatMessagesSubscription
 }

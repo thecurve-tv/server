@@ -10,6 +10,7 @@ import gameGetInviteQueryResolver from './game-get-invite.query.resolver'
 import IsOwnGameGuard from './is-own-game.guard'
 import IsGameHostGuard from './is-game-host.guard'
 import CanEditGameGuard from './can-edit-game.guard'
+import ContainsOnlyOwnChatsGuard from '../chat/contains-only-own-chats.guard'
 
 // normalised relations
 GameTC.addRelation('hostAccount', {
@@ -28,7 +29,7 @@ GameTC.addRelation('mainChat', {
 })
 // non-normalised relations
 GameTC.addRelation('chats', {
-  resolver: () => ChatTC.mongooseResolvers.findMany(),
+  resolver: () => guardResolver(ChatTC.mongooseResolvers.findMany(), new ContainsOnlyOwnChatsGuard()),
   prepareArgs: {
     filter: game => ({ game: game._id })
   },

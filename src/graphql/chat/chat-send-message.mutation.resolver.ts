@@ -1,4 +1,4 @@
-import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
+import { ResolverResolveParams, SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { IAccount } from '../../model/account'
 import { Chat, IChat } from '../../model/chat'
 import { ChatPlayer } from '../../model/chatPlayer'
@@ -16,6 +16,11 @@ export interface ChatSendMessageMutationResolverArgs {
   message: string
 }
 
+export interface ChatSendMessageMutationResolverResult {
+  chatId: MongoID
+  message: String
+}
+
 export default schemaComposer.createResolver<any, ChatSendMessageMutationResolverArgs>({
   name: 'ChatTestMutationResolver',
   type: ChatMessageTC,
@@ -23,29 +28,33 @@ export default schemaComposer.createResolver<any, ChatSendMessageMutationResolve
     chatId: 'MongoID!',
     message: 'String!'
   },
-  resolve: async ({ args, context }) => {
-    /**
-     * Validate:
-     * $- chat must exist
-     * $- sender must be a player in the chat
-     * $- chat.game must be active
-     * $- 1 <= message.length <= 500
-     * Do:
-     * $- build chat message
-     * $- publish message
-     */
-    const now = Date.now()
-    const [chat, playerId] = await validateChatSendMessageMutation(args, context.account._id, now)
-    const chatMessage: ChatMessage = {
-      chatId: chat._id.toHexString(),
-      fromPlayerId: playerId.toHexString(),
-      sentTime: now,
-      message: args.message
-    }
-    await pubsub.publish(pubsub.DEFAULT_PUBLISH_TRIGGER_NAME, { payload: chatMessage })
-    return chatMessage
-  }
+  resolve: resolveChatSendMessageMutation
 })
+
+async function resolveChatSendMessageMutation(
+  { args, context }: ResolverResolveParams<any, ResolverContext, ChatSendMessageMutationResolverArgs>
+): Promise<ChatSendMessageMutationResolverResult> {
+  /**
+   * Validate:
+   * $- chat must exist
+   * $- sender must be a player in the chat
+   * $- chat.game must be active
+   * $- 1 <= message.length <= 500
+   * Do:
+   * $- build chat message
+   * $- publish message
+   */
+  const now = Date.now()
+  const [chat, playerId] = await validateChatSendMessageMutation(args, context.account._id, now)
+  const chatMessage: ChatMessage = {
+    chatId: chat._id.toHexString(),
+    fromPlayerId: playerId.toHexString(),
+    sentTime: now,
+    message: args.message
+  }
+  await pubsub.publish(pubsub.DEFAULT_PUBLISH_TRIGGER_NAME, { payload: chatMessage })
+  return chatMessage
+}
 
 async function validateChatSendMessageMutation(args: ChatSendMessageMutationResolverArgs, accountId: IAccount['_id'], now: number): Promise<[IChat, IPlayer['_id']]> {
   if (args.message.length < 1 || args.message.length > 500) {
