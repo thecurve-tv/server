@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson'
 import { Game, IGame } from '@thecurve-tv/mongo-models/src/game'
 import { GraphErrorResponse } from '../graphql'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { UpdateByIdArgs } from '../mongoose-resolvers'
 import { getActiveGame } from './game-join.mutation.resolver'

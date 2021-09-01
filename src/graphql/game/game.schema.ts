@@ -1,6 +1,6 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IGame } from '@thecurve-tv/mongo-models/src/game'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { AccountTC, ChatTC, GameTC, PlayerTC } from '../types'
 import { guardResolver } from '../guard'
 import gameStartMutationResolver from './game-start.mutation.resolver'
@@ -16,41 +16,41 @@ import ContainsOnlyOwnChatsGuard from '../chat/contains-only-own-chats.guard'
 GameTC.addRelation('hostAccount', {
   resolver: () => AccountTC.mongooseResolvers.findById(),
   prepareArgs: {
-    _id: game => game.hostAccount
+    _id: game => game.hostAccount,
   },
-  projection: { hostAccount: 1 }
+  projection: { hostAccount: 1 },
 })
 GameTC.addRelation('mainChat', {
   resolver: () => ChatTC.mongooseResolvers.findById(),
   prepareArgs: {
-    _id: game => game.mainChat
+    _id: game => game.mainChat,
   },
-  projection: { mainChat: 1 }
+  projection: { mainChat: 1 },
 })
 // non-normalised relations
 GameTC.addRelation('chats', {
   resolver: () => guardResolver(ChatTC.mongooseResolvers.findMany(), new ContainsOnlyOwnChatsGuard()),
   prepareArgs: {
-    filter: game => ({ game: game._id })
+    filter: game => ({ game: game._id }),
   },
-  projection: { _id: 1 }
+  projection: { _id: 1 },
 })
 GameTC.addRelation('players', {
   resolver: () => PlayerTC.mongooseResolvers.findMany(),
   prepareArgs: {
-    filter: game => ({ game: game._id })
+    filter: game => ({ game: game._id }),
   },
-  projection: { _id: 1 }
+  projection: { _id: 1 },
 })
 
 export const gameQueries: ObjectTypeComposerFieldConfigMapDefinition<IGame, ResolverContext> = {
   gameById: guardResolver(GameTC.mongooseResolvers.findById(), new IsOwnGameGuard()),
-  gameGetInvite: gameGetInviteQueryResolver
+  gameGetInvite: gameGetInviteQueryResolver,
 }
 
 export const gameMutations: ObjectTypeComposerFieldConfigMapDefinition<IGame, ResolverContext> = {
   gameStart: gameStartMutationResolver,
   gameStop: guardResolver(gameStopMutationResolver, new IsGameHostGuard()),
   gameJoin: gameJoinMutationResolver,
-  gameUpdateById: guardResolver(GameTC.mongooseResolvers.updateById(), new CanEditGameGuard())
+  gameUpdateById: guardResolver(GameTC.mongooseResolvers.updateById(), new CanEditGameGuard()),
 }

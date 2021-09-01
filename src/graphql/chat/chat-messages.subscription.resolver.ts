@@ -27,8 +27,8 @@ export const ChatMessageTC = schemaComposer.createObjectTC({
     chatId: 'MongoID!',
     fromPlayerId: 'MongoID!',
     sentTime: 'Float!',
-    message: 'String!'
-  }
+    message: 'String!',
+  },
 })
 
 export interface ChatMessagesSubscriptionResolverArgs {
@@ -39,7 +39,7 @@ export const pubsub = new GooglePubSub<ChatMessage>({
   projectId: <string>environment.GOOGLE_PROJECT_ID,
   topicId: 'chat-messages',
   graphqlSubscriptionName: 'chatMessages',
-  orderingKey: 'chat-messages'
+  orderingKey: 'chat-messages',
 })
 
 const resolveChatMessagesSubscription: GraphQLFieldResolver<unknown, ResolverContext, ChatMessagesSubscriptionResolverArgs> = async (
@@ -62,9 +62,9 @@ const resolveChatMessagesSubscription: GraphQLFieldResolver<unknown, ResolverCon
   const subscriptionId = `chat-messages%chatId~${chatId}%toPlayer~${playerId.toHexString()}`
   return pubsub.asyncIteratorWithOptions(subscriptionId, {
     filter: {
-      keyEquals: { key: 'chatId', value: chatId }
+      keyEquals: { key: 'chatId', value: chatId },
     },
-    deleteExistingSubscription: true
+    deleteExistingSubscription: true,
   })
 }
 
@@ -78,10 +78,10 @@ async function validateChatMessagesSubscription(
     throw new GraphErrorResponse(400, 'There is no chat with that id')
   }
   const throwIfActiveGameNotFound = true
-  const game = await getActiveGame(chat.game, now, throwIfActiveGameNotFound, {hostAccount: 1})
+  const game = await getActiveGame(chat.game, now, throwIfActiveGameNotFound, { hostAccount: 1 })
   const requesterIsHost = accountId.toHexString() == (<ObjectId>game.hostAccount).toHexString()
   if (requesterIsHost) {
-    const player = await Player.findOne({game: game._id, account: accountId}, {_id: 1})
+    const player = await Player.findOne({ game: game._id, account: accountId }, { _id: 1 })
     if (!player) throw new GraphErrorResponse(500, 'We failed to get your player id based on your account id')
     return [chat, player._id]
   }
@@ -92,12 +92,12 @@ async function validateChatMessagesSubscription(
         from: Player.collection.name,
         localField: 'player',
         foreignField: '_id',
-        as: 'player'
-      }
+        as: 'player',
+      },
     },
     { $unwind: '$player' }, // one player
     { $match: { 'player.account': accountId } },
-    { $project: { 'player._id': 1 } }
+    { $project: { 'player._id': 1 } },
   ])
   if (aggregationResult.length == 0) {
     throw new GraphErrorResponse(403, 'You must be a player in that chat to listen to its messages')
@@ -108,7 +108,7 @@ async function validateChatMessagesSubscription(
 export default <ObjectTypeComposerFieldConfigDefinition<unknown, ResolverContext, ChatMessagesSubscriptionResolverArgs>>{
   type: ChatMessageTC,
   args: {
-    chatId: 'MongoID!'
+    chatId: 'MongoID!',
   },
-  subscribe: resolveChatMessagesSubscription
+  subscribe: resolveChatMessagesSubscription,
 }

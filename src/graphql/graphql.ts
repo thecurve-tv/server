@@ -19,7 +19,7 @@ export function getGraphQLMiddleware() {
     debug: !environment.PROD,
     introspection: true,
     tracing: true,
-    context: getGraphQLContext
+    context: getGraphQLContext,
   })
 }
 

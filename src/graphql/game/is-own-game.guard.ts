@@ -2,7 +2,7 @@ import { ObjectId } from 'bson'
 import { IAccount } from '@thecurve-tv/mongo-models/src/account'
 import { IGame } from '@thecurve-tv/mongo-models/src/game'
 import { Player } from '@thecurve-tv/mongo-models/src/player'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindByIdArgs } from '../mongoose-resolvers'
 

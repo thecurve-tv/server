@@ -3,7 +3,7 @@ import { accountQueries } from './account/account.schema'
 import { chatPlayerQueries } from './chat/chat-player.schema'
 import { chatMutations, chatQueries, chatSubscriptions } from './chat/chat.schema'
 import { gameMutations, gameQueries } from './game/game.schema'
-import { ResolverContext } from "./resolver-context"
+import { ResolverContext } from './resolver-context'
 import { photoQueries } from './photo/photo.schema'
 import { playerMutations, playerQueries } from './player/player.schema'
 
@@ -15,17 +15,17 @@ schemaComposer.Query.addFields({
   ...chatQueries,
   ...gameQueries,
   ...playerQueries,
-  ...photoQueries
+  ...photoQueries,
 })
 
 schemaComposer.Mutation.addFields({
   ...chatMutations,
   ...gameMutations,
-  ...playerMutations
+  ...playerMutations,
 })
 
 schemaComposer.Subscription.addFields({
-  ...chatSubscriptions
+  ...chatSubscriptions,
 })
 
 const Schema = schemaComposer.buildSchema()

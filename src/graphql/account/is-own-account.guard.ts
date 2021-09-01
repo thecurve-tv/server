@@ -1,12 +1,10 @@
 import { IAccount } from '@thecurve-tv/mongo-models/src/account'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindByIdArgs } from '../mongoose-resolvers'
 
 export default class IsOwnAccountGuard extends Guard<ResolverContext, FindByIdArgs, IAccount> {
-  constructor(
-    private revealAccountId = false
-  ) {
+  constructor(private revealAccountId = false) {
     super('egress')
   }
   async check({ context, data }: GuardInput<ResolverContext, FindByIdArgs, IAccount>): Promise<void | GuardOutput<FindByIdArgs, IAccount>> {

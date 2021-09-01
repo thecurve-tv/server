@@ -13,7 +13,7 @@ export const environment = {
   DEV_ACCOUNT_ID: process.env.DEV_ACCOUNT_ID,
   GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,
   GOOGLE_PROJECT_ID: process.env.GOOGLE_PROJECT_ID,
-  MONGODB_CONNECT_URI: process.env.MONGODB_CONNECT_URI
+  MONGODB_CONNECT_URI: process.env.MONGODB_CONNECT_URI,
 }
 
 export const security = new ExpressSecurity(environment)

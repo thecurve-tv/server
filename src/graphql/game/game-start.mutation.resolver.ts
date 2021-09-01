@@ -7,7 +7,7 @@ import { Game, IGame } from '@thecurve-tv/mongo-models/src/game'
 import { IPlayer, Player } from '@thecurve-tv/mongo-models/src/player'
 import { IDraftDocument } from '@thecurve-tv/mongo-models/src/_defaults'
 import { GraphErrorResponse } from '../graphql'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { GameTC, PlayerTC, ChatTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
@@ -33,20 +33,21 @@ export default schemaComposer.createResolver<any, GameStartMutationResolverArgs>
     fields: {
       game: GameTC.getType(),
       hostPlayer: PlayerTC.getType(),
-      chat: ChatTC.getType()
-    }
+      chat: ChatTC.getType(),
+    },
   }),
   args: {
     hostPlayerName: 'String!',
     maxPlayerCount: 'Int!',
-    duration: 'Int!'
+    duration: 'Int!',
   },
-  resolve: resolveGameStartMutation
+  resolve: resolveGameStartMutation,
 })
 
-async function resolveGameStartMutation(
-  { args, context }: ResolverResolveParams<any, ResolverContext, GameStartMutationResolverArgs>
-): Promise<GameStartMutationResolverResult> {
+async function resolveGameStartMutation({
+  args,
+  context,
+}: ResolverResolveParams<any, ResolverContext, GameStartMutationResolverArgs>): Promise<GameStartMutationResolverResult> {
   const now = Date.now()
   await validateGameStartMutation(args, context.account._id, now)
   const gameId: IDraftDocument<IGame>['_id'] = new ObjectId()
@@ -57,12 +58,12 @@ async function resolveGameStartMutation(
     maxPlayerCount: args.maxPlayerCount,
     startTime: now,
     endTime: now + args.duration,
-    mainChat: chatId
+    mainChat: chatId,
   }
   const curveChatDoc: IDraftDocument<IChat> = {
     _id: chatId,
     game: gameId,
-    name: 'Curve Chat'
+    name: 'Curve Chat',
   }
   const hostPlayerDoc: IDraftDocument<IPlayer> = {
     _id: new ObjectId(),
@@ -71,19 +72,21 @@ async function resolveGameStartMutation(
     name: args.hostPlayerName,
     age: 18,
     job: '',
-    bio: ''
+    bio: '',
   }
   let result: GameStartMutationResolverResult | unknown
-  await (await startSession()).withTransaction(async session => {
+  await (
+    await startSession()
+  ).withTransaction(async session => {
     await Promise.all([
       Game.create([gameDoc], { validateBeforeSave: true, session }),
       Player.create([hostPlayerDoc], { validateBeforeSave: true, session }),
-      Chat.create([curveChatDoc], { validateBeforeSave: true, session })
+      Chat.create([curveChatDoc], { validateBeforeSave: true, session }),
     ]).then(docs => {
       result = {
         game: docs[0][0],
         hostPlayer: docs[1][0],
-        chat: docs[2][0]
+        chat: docs[2][0],
       }
     })
   })
@@ -100,7 +103,7 @@ async function validateGameStartMutation(args: GameStartMutationResolverArgs, ac
   const existingGame = await Game.findOne(
     {
       hostAccount: accountId,
-      $or: [{ endTime: { $gt: now } }, { pausedTime: { $not: { $eq: undefined } } }]
+      $or: [{ endTime: { $gt: now } }, { pausedTime: { $not: { $eq: undefined } } }],
     },
     { _id: 1, endTime: 1, pausedTime: 1 }
   )

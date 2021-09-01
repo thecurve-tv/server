@@ -1,6 +1,6 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { IAccount } from '@thecurve-tv/mongo-models/src/account'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { guardResolver } from '../guard'
 import { AccountTC, PlayerTC } from '../types'
 import IsOwnAccountGuard from './is-own-account.guard'
@@ -10,12 +10,12 @@ import myAccountQueryResolver from './my-account.query.resolver'
 AccountTC.addRelation('players', {
   resolver: () => PlayerTC.mongooseResolvers.findMany(),
   prepareArgs: {
-    filter: account => ({ account: account._id })
+    filter: account => ({ account: account._id }),
   },
-  projection: { _id: 1 }
+  projection: { _id: 1 },
 })
 
 export const accountQueries: ObjectTypeComposerFieldConfigMapDefinition<IAccount, ResolverContext> = {
   myAccount: myAccountQueryResolver,
-  accountById: guardResolver(AccountTC.mongooseResolvers.findById(), new IsOwnAccountGuard())
+  accountById: guardResolver(AccountTC.mongooseResolvers.findById(), new IsOwnAccountGuard()),
 }
