@@ -3,10 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "package": "npm run format && npm run build && cp app.yaml dist/server",
-    "build": "tsc && cp package*.json src/.env dist/server",
-    "lint": "prettier -c .",
-    "format": "prettier --write .",
+    "lint": "prettier -u -c src/**/*",
+    "format": "prettier -u --write src/**/*",
+    "build": "tsc && cp package*.json src/.env build/ && cp app.yaml build/",
     "start": "cd src && ts-node bin/www --unhandled-rejections=strict"
   },
   "dependencies": {
