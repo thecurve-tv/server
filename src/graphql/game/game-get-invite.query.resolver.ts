@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson'
 import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
-import { Account, IAccount } from '../../model/account'
-import { Game, IGame } from '../../model/game'
-import { IPlayer, Player } from '../../model/player'
+import { Account, IAccount } from '@thecurve-tv/mongo-models/src/account'
+import { Game, IGame } from '@thecurve-tv/mongo-models/src/game'
+import { IPlayer, Player } from '@thecurve-tv/mongo-models/src/player'
 import { ResolverContext } from "../resolver-context"
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer

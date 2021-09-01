@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson'
-import { IGame } from '../../model/game'
-import { IPlayer, Player } from '../../model/player'
+import { IGame } from '@thecurve-tv/mongo-models/src/game'
+import { IPlayer, Player } from '@thecurve-tv/mongo-models/src/player'
 import { GraphErrorResponse } from '../graphql'
 import { ResolverContext } from "../resolver-context"
 import { Guard, GuardInput, GuardOutput } from '../guard'

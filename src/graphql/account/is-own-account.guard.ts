@@ -1,4 +1,4 @@
-import { IAccount } from '../../model/account'
+import { IAccount } from '@thecurve-tv/mongo-models/src/account'
 import { ResolverContext } from "../resolver-context"
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindByIdArgs } from '../mongoose-resolvers'

@@ -1,5 +1,5 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
-import { IPhoto } from '../../model/photo'
+import { IPhoto } from '@thecurve-tv/mongo-models/src/photo'
 import { ResolverContext } from "../resolver-context"
 import { PhotoTC, PlayerTC } from '../types'
 
@@ -7,7 +7,7 @@ import { PhotoTC, PlayerTC } from '../types'
 PhotoTC.addRelation('player', {
   resolver: () => PlayerTC.mongooseResolvers.findById(),
   prepareArgs: {
-    _id: player => player.player
+    _id: (photo: IPhoto) => photo.player
   },
   projection: { player: 1 }
 })

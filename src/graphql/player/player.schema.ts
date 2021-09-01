@@ -1,5 +1,5 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
-import { IPlayer } from '../../model/player'
+import { IPlayer } from '@thecurve-tv/mongo-models/src/player'
 import IsOwnAccountGuard from '../account/is-own-account.guard'
 import { ResolverContext } from "../resolver-context"
 import { guardResolver } from '../guard'

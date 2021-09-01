@@ -1,5 +1,5 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
-import { IGame } from '../../model/game'
+import { IGame } from '@thecurve-tv/mongo-models/src/game'
 import { ResolverContext } from "../resolver-context"
 import { AccountTC, ChatTC, GameTC, PlayerTC } from '../types'
 import { guardResolver } from '../guard'

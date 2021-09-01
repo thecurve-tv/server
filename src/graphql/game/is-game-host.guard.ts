@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson'
-import { Game, IGame } from '../../model/game'
+import { Game, IGame } from '@thecurve-tv/mongo-models/src/game'
 import { GraphErrorResponse } from '../graphql'
 import { ResolverContext } from "../resolver-context"
 import { Guard, GuardInput, GuardOutput } from '../guard'

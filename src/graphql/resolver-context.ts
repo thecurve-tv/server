@@ -1,5 +1,5 @@
 import { ExpressContext } from 'apollo-server-express'
-import { IAccount } from '../model/account'
+import { IAccount } from '@thecurve-tv/mongo-models/src/account'
 
 
 export interface ResolverContext extends ExpressContext {

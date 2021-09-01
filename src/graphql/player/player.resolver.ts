@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson'
 import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
-import { Chat, IChat } from '../../model/chat'
-import { ChatPlayer, IChatPlayer } from '../../model/chatPlayer'
+import { Chat, IChat } from '@thecurve-tv/mongo-models/src/chat'
+import { ChatPlayer, IChatPlayer } from '@thecurve-tv/mongo-models/src/chatPlayer'
 import { ResolverContext } from "../resolver-context"
 import { ChatTC } from '../types'
 

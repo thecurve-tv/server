@@ -1,10 +1,9 @@
 import { ApolloError, ApolloServer, AuthenticationError, ExpressContext } from 'apollo-server-express'
 import { RequestHandler, Response } from 'express'
 import Schema from './schema'
-import { environment } from '../environment'
-import { ensureAuthenticated, getAccessToken, getAccessTokenFromGenericObject, verifyJwt } from '../util/security'
-import { AuthenticatedRequest, errorResponse, fetchAccount, fetchAccountUsingJwtPayload } from '../util/session'
-import { Account, IAccount } from '../model/account'
+import { environment, security } from '../environment'
+import { AuthenticatedRequest, errorResponse, fetchAccount, fetchAccountUsingJwtPayload } from '@thecurve-tv/express-utils/src/session'
+import { Account, IAccount } from '@thecurve-tv/mongo-models/src/account'
 import { ResolverContext } from './resolver-context'
 
 export class GraphErrorResponse extends ApolloError {
@@ -43,11 +42,11 @@ async function getAccountFromExpressContext({ connection, req, res }: ExpressCon
   let account: IAccount | null
   if (connection) {
     // Operation is a Subscription
-    accessToken = getAccessTokenFromGenericObject(connection.context)
+    accessToken = security.getAccessTokenFromGenericObject(connection.context)
     account = await authenticateSubscription(accessToken)
   } else {
     // Operation is a Query/Mutation
-    accessToken = getAccessToken(req)
+    accessToken = security.getAccessToken(req)
     account = await authenticateGraphRequest(req, res)
   }
   const attemptDevAccount = !account && !environment.PROD && environment.DEV_ACCOUNT_ID && !accessToken
@@ -58,7 +57,7 @@ async function getAccountFromExpressContext({ connection, req, res }: ExpressCon
 }
 
 async function authenticateGraphRequest(req: AuthenticatedRequest, res: Response): Promise<IAccount | null> {
-  const authenticationChain = ensureAuthenticated()
+  const authenticationChain = security.ensureAuthenticated()
   const executeRequestHandler = (handler: RequestHandler) => {
     return new Promise<boolean>((resolve, reject) => {
       handler(req, res, (err?: any) => {
@@ -89,7 +88,7 @@ async function authenticateGraphRequest(req: AuthenticatedRequest, res: Response
 async function authenticateSubscription(accessToken: string | undefined): Promise<IAccount | null> {
   if (!accessToken) return null
   try {
-    const payload = await verifyJwt(accessToken)
+    const payload = await security.verifyJwt(accessToken)
     if (!payload) return null
     const account = await fetchAccountUsingJwtPayload(payload)
     return account

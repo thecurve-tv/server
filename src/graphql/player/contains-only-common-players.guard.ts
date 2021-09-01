@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson'
-import { IPlayer, Player } from '../../model/player'
+import { IPlayer, Player } from '@thecurve-tv/mongo-models/src/player'
 import { ResolverContext } from "../resolver-context"
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindManyArgs } from '../mongoose-resolvers'
