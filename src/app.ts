@@ -6,9 +6,6 @@ import mongoose from 'mongoose'
 
 import { environment, security } from './environment'
 import { router as accountRouter } from './routes/accounts'
-import { router as gameRouter } from './routes/games'
-import { router as chatRouter } from './routes/chats'
-import { router as roomRouter } from './routes/rooms'
 import { getGraphQLMiddleware } from './graphql/graphql'
 
 export const app = express()
@@ -34,11 +31,8 @@ apolloServer.applyMiddleware({
 })
 
 app.use('/accounts', accountRouter)
-app.use('/games', gameRouter)
-app.use('/chats', chatRouter)
-app.use('/rooms', roomRouter)
 
-app.use('*', (req, res) => {
+app.use('*', (_req, res) => {
   res.sendStatus(404)
 })
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
