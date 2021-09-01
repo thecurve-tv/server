@@ -1,12 +1,12 @@
 import { ResolverResolveParams, SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
-import { IAccount } from '../../model/account'
-import { Chat, IChat } from '../../model/chat'
-import { ChatPlayer } from '../../model/chatPlayer'
-import { IPlayer, Player } from '../../model/player'
+import { IAccount } from '@thecurve-tv/mongo-models/src/account'
+import { Chat, IChat } from '@thecurve-tv/mongo-models/src/chat'
+import { ChatPlayer } from '@thecurve-tv/mongo-models/src/chatPlayer'
+import { IPlayer, Player } from '@thecurve-tv/mongo-models/src/player'
 import { getActiveGame } from '../game/game-join.mutation.resolver'
 import { GraphErrorResponse } from '../graphql'
 import { MongoID } from '../mongoose-resolvers'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { ChatMessage, ChatMessageTC, pubsub } from './chat-messages.subscription.resolver'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
@@ -26,14 +26,15 @@ export default schemaComposer.createResolver<any, ChatSendMessageMutationResolve
   type: ChatMessageTC,
   args: {
     chatId: 'MongoID!',
-    message: 'String!'
+    message: 'String!',
   },
-  resolve: resolveChatSendMessageMutation
+  resolve: resolveChatSendMessageMutation,
 })
 
-async function resolveChatSendMessageMutation(
-  { args, context }: ResolverResolveParams<any, ResolverContext, ChatSendMessageMutationResolverArgs>
-): Promise<ChatSendMessageMutationResolverResult> {
+async function resolveChatSendMessageMutation({
+  args,
+  context,
+}: ResolverResolveParams<any, ResolverContext, ChatSendMessageMutationResolverArgs>): Promise<ChatSendMessageMutationResolverResult> {
   /**
    * Validate:
    * $- chat must exist
@@ -50,13 +51,17 @@ async function resolveChatSendMessageMutation(
     chatId: chat._id.toHexString(),
     fromPlayerId: playerId.toHexString(),
     sentTime: now,
-    message: args.message
+    message: args.message,
   }
   await pubsub.publish(pubsub.DEFAULT_PUBLISH_TRIGGER_NAME, { payload: chatMessage })
   return chatMessage
 }
 
-async function validateChatSendMessageMutation(args: ChatSendMessageMutationResolverArgs, accountId: IAccount['_id'], now: number): Promise<[IChat, IPlayer['_id']]> {
+async function validateChatSendMessageMutation(
+  args: ChatSendMessageMutationResolverArgs,
+  accountId: IAccount['_id'],
+  now: number
+): Promise<[IChat, IPlayer['_id']]> {
   if (args.message.length < 1 || args.message.length > 500) {
     throw new GraphErrorResponse(400, 'Messages must be between 1 and 500 characters long (inclusive)')
   }
@@ -73,12 +78,12 @@ async function validateChatSendMessageMutation(args: ChatSendMessageMutationReso
         from: Player.collection.name,
         localField: 'player',
         foreignField: '_id',
-        as: 'player'
-      }
+        as: 'player',
+      },
     },
     { $unwind: '$player' }, // one player
     { $match: { 'player.account': accountId } },
-    { $project: { 'player._id': 1 } }
+    { $project: { 'player._id': 1 } },
   ])
   if (aggregationResult.length == 0) {
     throw new GraphErrorResponse(403, 'You must be a player in that chat to send messages to it')

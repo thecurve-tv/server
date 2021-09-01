@@ -1,14 +1,14 @@
 import { ObjectId } from 'bson'
 import { ResolverResolveParams, SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { startSession } from 'mongoose'
-import { Chat, IChat } from '../../model/chat'
-import { ChatPlayer, IChatPlayer } from '../../model/chatPlayer'
-import { IGame } from '../../model/game'
-import { IPlayer, Player } from '../../model/player'
-import { IDraftDocument } from '../../model/_defaults'
+import { Chat, IChat } from '@thecurve-tv/mongo-models/src/chat'
+import { ChatPlayer, IChatPlayer } from '@thecurve-tv/mongo-models/src/chatPlayer'
+import { IGame } from '@thecurve-tv/mongo-models/src/game'
+import { IPlayer, Player } from '@thecurve-tv/mongo-models/src/player'
+import { IDraftDocument } from '@thecurve-tv/mongo-models/src/_defaults'
 import { getActiveGame } from '../game/game-join.mutation.resolver'
 import { GraphErrorResponse } from '../graphql'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { MongoID } from '../mongoose-resolvers'
 import { ChatPlayerTC, ChatTC } from '../types'
 
@@ -31,20 +31,21 @@ export default schemaComposer.createResolver<any, ChatCreateMutationResolverArgs
     name: 'ChatCreateMutationResolverResult',
     fields: {
       chat: ChatTC,
-      chatPlayers: [ChatPlayerTC]
-    }
+      chatPlayers: [ChatPlayerTC],
+    },
   }),
   args: {
     gameId: 'MongoID!',
     name: 'String!',
-    playerIds: '[MongoID!]!'
+    playerIds: '[MongoID!]!',
   },
-  resolve: resolveChatCreateMutation
+  resolve: resolveChatCreateMutation,
 })
 
-async function resolveChatCreateMutation(
-  { args, context }: ResolverResolveParams<any, ResolverContext, ChatCreateMutationResolverArgs>
-): Promise<ChatCreateMutationResolverResult> {
+async function resolveChatCreateMutation({
+  args,
+  context,
+}: ResolverResolveParams<any, ResolverContext, ChatCreateMutationResolverArgs>): Promise<ChatCreateMutationResolverResult> {
   /**
    * Validate args
    * $- game must be active
@@ -68,23 +69,22 @@ async function resolveChatCreateMutation(
   const chatDoc: IDraftDocument<IChat> = {
     _id: new ObjectId(),
     game: game._id,
-    name: args.name
+    name: args.name,
   }
   const chatPlayerDocs: IDraftDocument<IChatPlayer>[] = args.playerIds.map(playerId => {
     return {
       chat: chatDoc._id,
-      player: new ObjectId(playerId)
+      player: new ObjectId(playerId),
     }
   })
   let result: ChatCreateMutationResolverResult | unknown
-  await (await startSession()).withTransaction(async session => {
-    await Promise.all([
-      Chat.create([chatDoc], { session }),
-      ChatPlayer.create(chatPlayerDocs, { session })
-    ]).then(([[chat], chatPlayers]) => {
+  await (
+    await startSession()
+  ).withTransaction(async session => {
+    await Promise.all([Chat.create([chatDoc], { session }), ChatPlayer.create(chatPlayerDocs, { session })]).then(([[chat], chatPlayers]) => {
       result = {
         chat,
-        chatPlayers
+        chatPlayers,
       }
     })
   })
@@ -96,10 +96,7 @@ async function validateArgs(game: IGame, context: ResolverContext, args: ChatCre
   if ((<ObjectId>game.hostAccount).toHexString() === requesterId.toHexString()) {
     throw new GraphErrorResponse(403, 'You cannot create chats as the game host')
   }
-  const requesterPlayer: Pick<IPlayer, '_id'> | null = await Player.findOne(
-    { game: game._id, account: requesterId },
-    { _id: 1 }
-  )
+  const requesterPlayer: Pick<IPlayer, '_id'> | null = await Player.findOne({ game: game._id, account: requesterId }, { _id: 1 })
   if (!requesterPlayer) {
     throw new GraphErrorResponse(403, 'You must be a player in the Game to create a chat')
   }

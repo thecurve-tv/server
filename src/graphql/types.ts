@@ -1,10 +1,10 @@
 import { composeMongoose } from 'graphql-compose-mongoose'
-import { Account } from '../model/account'
-import { Chat } from '../model/chat'
-import { ChatPlayer } from '../model/chatPlayer'
-import { Game } from '../model/game'
-import { Photo } from '../model/photo'
-import { Player } from '../model/player'
+import { Account } from '@thecurve-tv/mongo-models/src/account'
+import { Chat } from '@thecurve-tv/mongo-models/src/chat'
+import { ChatPlayer } from '@thecurve-tv/mongo-models/src/chatPlayer'
+import { Game } from '@thecurve-tv/mongo-models/src/game'
+import { Photo } from '@thecurve-tv/mongo-models/src/photo'
+import { Player } from '@thecurve-tv/mongo-models/src/player'
 
 export const AccountTC = composeMongoose(Account)
 export const ChatTC = composeMongoose(Chat)

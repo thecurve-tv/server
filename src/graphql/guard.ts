@@ -31,7 +31,7 @@ export function guardResolver<TSource, TContext, TArgs, TReturn>(
       for (const guard of guards.filter(guard => guard.type == 'ingress')) {
         const result = await guard.check({
           args: params.args,
-          context: params.context
+          context: params.context,
         })
         if (!result) continue
         if (result.args) params.args = result.args
@@ -41,7 +41,7 @@ export function guardResolver<TSource, TContext, TArgs, TReturn>(
         const result = await guard.check({
           args: params.args,
           context: params.context,
-          data
+          data,
         })
         if (!result) continue
         if (result.args) params.args = result.args
@@ -52,7 +52,7 @@ export function guardResolver<TSource, TContext, TArgs, TReturn>(
         }
       }
       return data
-    }
+    },
   })
   return guardedResolver
 }

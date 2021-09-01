@@ -126,10 +126,7 @@ export class GooglePubSubAsyncIterator<TPayload> implements AsyncIterator<TPaylo
     }
     try {
       const data: TPayload = JSON.parse(message.data.toString())
-      this.messageQueue.supply(this.isRunning
-        ? { value: data, done: false }
-        : { value: undefined, done: true },
-      )
+      this.messageQueue.supply(this.isRunning ? { value: data, done: false } : { value: undefined, done: true })
       message.ack()
     } catch (err) {
       console.error(err)
@@ -145,5 +142,4 @@ export class GooglePubSubAsyncIterator<TPayload> implements AsyncIterator<TPaylo
     consumersWaitingForValues.forEach(consumer => consumer({ value: undefined, done: true }))
     this.engine.unsubscribe(subscriptionNumber)
   }
-
 }

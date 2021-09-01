@@ -1,6 +1,6 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
-import { IChat } from '../../model/chat'
-import { ResolverContext } from "../resolver-context"
+import { IChat } from '@thecurve-tv/mongo-models/src/chat'
+import { ResolverContext } from '../resolver-context'
 import { guardResolver } from '../guard'
 import { ChatTC, GameTC } from '../types'
 import chatCreateMutationResolver from './chat-create.mutation.resolver'
@@ -13,28 +13,28 @@ import chatSendMessageMutationResolver from './chat-send-message.mutation.resolv
 ChatTC.addRelation('game', {
   resolver: () => GameTC.mongooseResolvers.findById(),
   prepareArgs: {
-    _id: chat => chat.game
+    _id: chat => chat.game,
   },
-  projection: { game: 1 }
+  projection: { game: 1 },
 })
 // non-normalised relations
 ChatTC.addRelation('players', {
   resolver: chatPlayersRelationResolver,
   prepareArgs: {
-    chatId: chat => chat._id
+    chatId: chat => chat._id,
   },
-  projection: { _id: 1 }
+  projection: { _id: 1 },
 })
 
 export const chatQueries: ObjectTypeComposerFieldConfigMapDefinition<IChat, ResolverContext> = {
-  chatMany: guardResolver(ChatTC.mongooseResolvers.findMany(), new ContainsOnlyOwnChatsGuard())
+  chatMany: guardResolver(ChatTC.mongooseResolvers.findMany(), new ContainsOnlyOwnChatsGuard()),
 }
 
 export const chatMutations: ObjectTypeComposerFieldConfigMapDefinition<IChat, ResolverContext> = {
   chatCreate: chatCreateMutationResolver,
-  chatSendMessage: chatSendMessageMutationResolver
+  chatSendMessage: chatSendMessageMutationResolver,
 }
 
 export const chatSubscriptions: ObjectTypeComposerFieldConfigMapDefinition<IChat, ResolverContext> = {
-  chatMessages: chatMessagesSubscriptionResolver
+  chatMessages: chatMessagesSubscriptionResolver,
 }

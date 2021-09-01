@@ -1,9 +1,9 @@
 import { ObjectId } from 'bson'
 import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
-import { Account, IAccount } from '../../model/account'
-import { Game, IGame } from '../../model/game'
-import { IPlayer, Player } from '../../model/player'
-import { ResolverContext } from "../resolver-context"
+import { Account, IAccount } from '@thecurve-tv/mongo-models/src/account'
+import { Game, IGame } from '@thecurve-tv/mongo-models/src/game'
+import { IPlayer, Player } from '@thecurve-tv/mongo-models/src/player'
+import { ResolverContext } from '../resolver-context'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 
@@ -21,7 +21,7 @@ export interface GameGetInviteQueryResolverResult {
   pausedTime?: number
   gameStatus: 'OPEN' | 'FULL' | 'CLOSED'
 }
-type GameInvite = IGame & { hostAccount: IAccount, players: IPlayer[] }
+type GameInvite = IGame & { hostAccount: IAccount; players: IPlayer[] }
 export default schemaComposer.createResolver<any, GameGetInviteQueryResolverArgs>({
   name: 'GameGetInviteQueryResolver',
   type: schemaComposer.createObjectTC({
@@ -32,8 +32,8 @@ export default schemaComposer.createResolver<any, GameGetInviteQueryResolverArgs
         name: 'GameGetInviteQueryResolverResultHostAccount',
         fields: {
           _id: 'MongoID!',
-          email: 'String!'
-        }
+          email: 'String!',
+        },
       }),
       maxPlayerCount: 'Float!',
       endTime: 'Float!',
@@ -43,27 +43,27 @@ export default schemaComposer.createResolver<any, GameGetInviteQueryResolverArgs
         values: {
           OPEN: { value: 'OPEN' },
           FULL: { value: 'FULL' },
-          CLOSED: { value: 'CLOSED' }
-        }
-      })
-    }
+          CLOSED: { value: 'CLOSED' },
+        },
+      }),
+    },
   }),
   args: {
-    gameId: 'MongoID!'
+    gameId: 'MongoID!',
   },
   resolve: async ({ args }) => {
     const now = Date.now()
     const [game]: GameInvite[] = await Game.aggregate([
       {
-        $match: { _id: new ObjectId(args.gameId) }
+        $match: { _id: new ObjectId(args.gameId) },
       },
       {
         $lookup: {
           from: Account.collection.name,
           localField: 'hostAccount',
           foreignField: '_id',
-          as: 'hostAccount'
-        }
+          as: 'hostAccount',
+        },
       },
       { $unwind: '$hostAccount' }, // one account
       {
@@ -71,9 +71,9 @@ export default schemaComposer.createResolver<any, GameGetInviteQueryResolverArgs
           from: Player.collection.name,
           localField: '_id',
           foreignField: 'game',
-          as: 'players'
-        }
-      }
+          as: 'players',
+        },
+      },
     ])
     if (!game) return null
     const hostAccount = <IAccount>game.hostAccount
@@ -82,19 +82,19 @@ export default schemaComposer.createResolver<any, GameGetInviteQueryResolverArgs
       _id: game._id,
       hostAccount: {
         _id: hostAccount._id,
-        email: hostAccount.email
+        email: hostAccount.email,
       },
       maxPlayerCount: game.maxPlayerCount,
       endTime: game.endTime,
       pausedTime: game.pausedTime,
-      gameStatus
+      gameStatus,
     }
-  }
+  },
 })
 
 function getGameStatus(now: number, game: GameInvite) {
   const playerCount = game.players.length
-  const cutOffTime = now - (60 * 1000)
+  const cutOffTime = now - 60 * 1000
   if (game.pausedTime || game.endTime <= cutOffTime) return 'CLOSED'
   else if (playerCount == game.maxPlayerCount) return 'FULL'
   return 'OPEN'

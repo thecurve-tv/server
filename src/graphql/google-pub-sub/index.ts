@@ -94,9 +94,9 @@ export interface SubscriptionFilter<TPayload> {
   /** attributes:"{hasKey}" */
   hasKey?: keyof TPayload
   /** attributes."{keyEquals.key}" = "{keyEquals.value}" */
-  keyEquals?: { key: keyof TPayload, value: string }
+  keyEquals?: { key: keyof TPayload; value: string }
   /** hasPrefix(attributes."{startsWith.key}", "{startsWith.value}") */
-  startsWith?: { key: keyof TPayload, value: string }
+  startsWith?: { key: keyof TPayload; value: string }
   /** NOT | != */
   isNegated?: true
   /** this AND (that) AND (that) AND (that) */
@@ -124,9 +124,7 @@ export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubS
    */
   readonly DEFAULT_PUBLISH_TRIGGER_NAME = ''
 
-  constructor(
-    public readonly config: Readonly<GooglePubSubConfig>
-  ) {
+  constructor(public readonly config: Readonly<GooglePubSubConfig>) {
     this.topicName = `projects/${this.config.projectId}/topics/${this.config.topicId}`
   }
 
@@ -212,14 +210,14 @@ export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubS
       attributes = options.attributes
     } else {
       attributes = {}
-      Object.entries(options.payload).forEach(([key, value]) => attributes[key] = `${value}`)
+      Object.entries(options.payload).forEach(([key, value]) => (attributes[key] = `${value}`))
     }
     await topic.publishMessage({
       json: {
-        [this.config.graphqlSubscriptionName]: options.payload
+        [this.config.graphqlSubscriptionName]: options.payload,
       },
       attributes,
-      orderingKey: this.config.orderingKey
+      orderingKey: this.config.orderingKey,
     })
   }
 
@@ -255,7 +253,7 @@ export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubS
       labels: options.labels,
       enableMessageOrdering: !!this.config.orderingKey,
       expirationPolicy: { ttl: { seconds: options.messageExpirationSeconds || 24 * 60 * 60 } },
-      filter: options.filter ? this.convertFilterToString(options.filter) : undefined
+      filter: options.filter ? this.convertFilterToString(options.filter) : undefined,
     })
     this.subscriptions.add(subscription)
     return subscription

@@ -1,15 +1,15 @@
 import { ObjectId } from 'bson'
 import { ResolverResolveParams, SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { startSession } from 'mongoose'
-import { IAccount } from '../../model/account'
-import { IChat } from '../../model/chat'
-import { ChatPlayer, IChatPlayer } from '../../model/chatPlayer'
-import { Game, IGame } from '../../model/game'
-import { IPlayer, Player } from '../../model/player'
-import { IRoom, Room } from '../../model/room'
-import { IDraftDocument } from '../../model/_defaults'
+import { IAccount } from '@thecurve-tv/mongo-models/src/account'
+import { IChat } from '@thecurve-tv/mongo-models/src/chat'
+import { ChatPlayer, IChatPlayer } from '@thecurve-tv/mongo-models/src/chatPlayer'
+import { Game, IGame } from '@thecurve-tv/mongo-models/src/game'
+import { IPlayer, Player } from '@thecurve-tv/mongo-models/src/player'
+import { IRoom, Room } from '@thecurve-tv/mongo-models/src/room'
+import { IDraftDocument } from '@thecurve-tv/mongo-models/src/_defaults'
 import { GraphErrorResponse } from '../graphql'
-import { ResolverContext } from "../resolver-context"
+import { ResolverContext } from '../resolver-context'
 import { GameTC, PlayerTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
@@ -30,19 +30,20 @@ export default schemaComposer.createResolver<any, GameJoinMutationResolverArgs>(
     name: 'GameJoinMutationResolverResult',
     fields: {
       game: GameTC.getType(),
-      player: PlayerTC.getType()
-    }
+      player: PlayerTC.getType(),
+    },
   }),
   args: {
     _id: 'MongoID!',
-    playerName: 'String!'
+    playerName: 'String!',
   },
-  resolve: resolveGameJoinMutation
+  resolve: resolveGameJoinMutation,
 })
 
-async function resolveGameJoinMutation(
-  { args, context }: ResolverResolveParams<any, ResolverContext, GameJoinMutationResolverArgs>
-): Promise<GameJoinMutationResolverResult> {
+async function resolveGameJoinMutation({
+  args,
+  context,
+}: ResolverResolveParams<any, ResolverContext, GameJoinMutationResolverArgs>): Promise<GameJoinMutationResolverResult> {
   /**
    * Validate:
    * $- game must be active
@@ -66,28 +67,26 @@ async function resolveGameJoinMutation(
     name: args.playerName,
     age: 18,
     job: '',
-    bio: ''
+    bio: '',
   }
   const chatPlayerDoc: IDraftDocument<IChatPlayer> = {
     chat: curveChatId,
-    player: playerDoc._id
+    player: playerDoc._id,
   }
   const roomDoc: IDraftDocument<IRoom> = {
-    player: playerDoc._id
+    player: playerDoc._id,
   }
   let result: GameJoinMutationResolverResult | unknown
   const session = await startSession()
   await session.withTransaction(async session => {
-    await Promise.all([
-      Player.create([playerDoc], { session }),
-      ChatPlayer.create([chatPlayerDoc], { session }),
-      Room.create([roomDoc], { session })
-    ]).then(([[player], _chatPlayers, _rooms]) => {
-      result = {
-        game: activeGame,
-        player
+    await Promise.all([Player.create([playerDoc], { session }), ChatPlayer.create([chatPlayerDoc], { session }), Room.create([roomDoc], { session })]).then(
+      ([[player], _chatPlayers, _rooms]) => {
+        result = {
+          game: activeGame,
+          player,
+        }
       }
-    })
+    )
   })
   return <GameJoinMutationResolverResult>result
 }
@@ -119,7 +118,7 @@ export async function getActiveGame(
   const game = await Game.findOne(
     {
       _id,
-      $and: [{ endTime: { $gt: now } }, { pausedTime: { $eq: undefined } }]
+      $and: [{ endTime: { $gt: now } }, { pausedTime: { $eq: undefined } }],
     },
     projection
   )

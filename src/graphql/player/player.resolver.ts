@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson'
 import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
-import { Chat, IChat } from '../../model/chat'
-import { ChatPlayer, IChatPlayer } from '../../model/chatPlayer'
-import { ResolverContext } from "../resolver-context"
+import { Chat, IChat } from '@thecurve-tv/mongo-models/src/chat'
+import { ChatPlayer, IChatPlayer } from '@thecurve-tv/mongo-models/src/chatPlayer'
+import { ResolverContext } from '../resolver-context'
 import { ChatTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
@@ -14,7 +14,7 @@ export const PlayerChatsRelationResolver = schemaComposer.createResolver<any, Pl
   name: 'PlayerChatsRelationResolver',
   type: [ChatTC.getType()],
   args: {
-    playerId: 'MongoID!'
+    playerId: 'MongoID!',
   },
   resolve: async ({ args }) => {
     const chatPlayers: (IChatPlayer & { chat: IChat })[] = await ChatPlayer.aggregate([
@@ -24,11 +24,11 @@ export const PlayerChatsRelationResolver = schemaComposer.createResolver<any, Pl
           from: Chat.collection.name,
           localField: 'chat',
           foreignField: '_id',
-          as: 'chat'
-        }
+          as: 'chat',
+        },
       },
       { $unwind: '$chat' }, // one player
     ])
     return chatPlayers.map(cp => <IChat>cp.chat)
-  }
+  },
 })
