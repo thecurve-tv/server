@@ -2,8 +2,8 @@ import { ApolloError, ApolloServer, AuthenticationError, ExpressContext } from '
 import { RequestHandler, Response } from 'express'
 import Schema from './schema'
 import { environment, security } from '../environment'
-import { AuthenticatedRequest, errorResponse, fetchAccount, fetchAccountUsingJwtPayload } from '@thecurve-tv/express-utils/src/session'
-import { Account, IAccount } from '@thecurve-tv/mongo-models/src/account'
+import { AuthenticatedRequest, errorResponse, fetchAccount, fetchAccountUsingJwtPayload } from '@thecurve-tv/express-utils/session'
+import { Account, IAccount } from '@thecurve-tv/mongo-models/account'
 import { ResolverContext } from './resolver-context'
 
 export class GraphErrorResponse extends ApolloError {
@@ -28,7 +28,7 @@ async function getGraphQLContext(context: ExpressContext): Promise<ResolverConte
   let account: IAccount | null
   try {
     account = await getAccountFromExpressContext(context)
-  } catch (err) {
+  } catch (err: any) {
     // Only execution errors are caught here. Authentication errors simply result in `account === null`
     if (!environment.PROD) console.error('GraphQL Authentication broke!', err)
     throw new GraphErrorResponse(500, err.message || 'GraphQL Authentication broke!')

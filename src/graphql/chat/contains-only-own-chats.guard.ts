@@ -1,11 +1,11 @@
-import { Chat, IChat } from '@thecurve-tv/mongo-models/src/chat'
-import { ChatPlayer } from '@thecurve-tv/mongo-models/src/chatPlayer'
-import { Player } from '@thecurve-tv/mongo-models/src/player'
+import { Chat, IChat } from '@thecurve-tv/mongo-models/chat'
+import { ChatPlayer } from '@thecurve-tv/mongo-models/chatPlayer'
+import { Player } from '@thecurve-tv/mongo-models/player'
 import { ResolverContext } from '../resolver-context'
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindManyArgs } from '../mongoose-resolvers'
 import { ObjectId } from 'bson'
-import { Game } from '@thecurve-tv/mongo-models/src/game'
+import { Game } from '@thecurve-tv/mongo-models/game'
 
 export default class ContainsOnlyOwnChatsGuard extends Guard<ResolverContext, FindManyArgs, any> {
   constructor() {
