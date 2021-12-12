@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Install NPM packages 📦
@@ -24,6 +27,9 @@ jobs:
     # we want to be notified of vulnerabilities but don't want them to block development
     continue-on-error: true
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       - uses: actions/checkout@v2
       - name: Install NPM packages 📦
         run: npm ci
@@ -33,6 +39,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       - uses: actions/checkout@v2
       - name: Install NPM packages 📦
         run: npm ci
@@ -64,6 +73,9 @@ jobs:
     needs: [build]
     if: github.ref == 'refs/heads/main'
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       - uses: actions/checkout@v2 # required for GITHUB_WORKSPACE env var
       - name: Download deployment artifacts 🌩
         uses: actions/download-artifact@v2
