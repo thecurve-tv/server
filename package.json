@@ -9,9 +9,9 @@
     "start": "cd src && ts-node bin/www --unhandled-rejections=strict"
   },
   "dependencies": {
-    "@thecurve-tv/express-utils": "git+https://github.com/thecurve-tv/express-utils.git#semver:^1.0.x",
-    "@thecurve-tv/mongo-models": "git+https://github.com/thecurve-tv/mongo-models.git#semver:^1.0.x",
     "@google-cloud/pubsub": "^2.14.0",
+    "@thecurve-tv/express-utils": "^1.0.4",
+    "@thecurve-tv/mongo-models": "^1.0.1",
     "apollo-server-express": "^2.24.0",
     "auth0": "^2.34.2",
     "bson": "^4.5.0",
