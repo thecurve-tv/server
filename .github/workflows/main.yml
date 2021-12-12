@@ -8,6 +8,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
 jobs:
   lint:
     runs-on: ubuntu-latest
