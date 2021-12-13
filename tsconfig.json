@@ -1,10 +1,12 @@
 {
-  "extends": "@tsconfig/node12/tsconfig.json",
+  "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
     "preserveConstEnums": true,
     "outDir": "build",
-    "allowJs": true,
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
