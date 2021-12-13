@@ -5,9 +5,13 @@
   "scripts": {
     "lint": "prettier -u -c src/**/*",
     "format": "prettier -u --write src/**/*",
-    "build": "tsc && cp package*.json src/.env build/ && cp app.yaml build/",
-    "test": "jest",
-    "start": "cd src && ts-node bin/www --unhandled-rejections=strict"
+    "prebuild": "rm -rf build",
+    "build": "tsc",
+    "postbuild": "cp app.yaml package*.json build && echo Build complete. You may now create a .env file in the build directory.",
+    "setup-node": "set NODE_OPTIONS='--unhandled-rejections=strict --trace-deprecation'",
+    "test": "ts-node --transpile-only test/run-tests",
+    "start": "npm run setup-node && node .",
+    "start:test": "npm run setup-node && ts-node --transpile-only test/start-test-server"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.14.0",

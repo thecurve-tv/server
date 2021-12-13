@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-import { app, apolloServer, onListening as appOnListening } from '../app'
+import { app, apolloServer, onListening as appOnListening } from './app'
 import http from 'http'
 
 /**
