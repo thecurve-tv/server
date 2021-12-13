@@ -53,21 +53,6 @@ jobs:
         run: npm ci
       - name: Build server 🛠
         run: npm run build
-      - name: Create .env 🤫
-        uses: DeveloperRic/action-create-env@v1.0.3
-        with:
-          full_text: ''
-          directory: build
-          include_env_vars: true
-        env:
-          ACTION_CREATE_ENV_PROD: ${{ secrets.PROD }}
-          ACTION_CREATE_ENV_PORT: ${{ secrets.PORT }}
-          ACTION_CREATE_ENV_AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
-          ACTION_CREATE_ENV_AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
-          ACTION_CREATE_ENV_AUTH0_API_AUDIENCE: ${{ secrets.AUTH0_API_AUDIENCE }}
-          ACTION_CREATE_ENV_AUTH0_API_DOMAIN: ${{ secrets.AUTH0_API_DOMAIN }}
-          ACTION_CREATE_ENV_CLIENT_DOMAIN: ${{ secrets.CLIENT_DOMAIN }}
-          ACTION_CREATE_ENV_MONGODB_CONNECT_URI: ${{ secrets.MONGODB_CONNECT_URI }}
       - name: Upload deployment artifacts ⛅
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v2
@@ -103,6 +88,23 @@ jobs:
         with:
           name: deployment-artifacts
           path: build
+      - name: Create .env 🤫
+        uses: DeveloperRic/action-create-env@v1.0.3
+        with:
+          full_text: ''
+          directory: build
+          include_env_vars: true
+        env:
+          ACTION_CREATE_ENV_PROD: ${{ secrets.PROD }}
+          ACTION_CREATE_ENV_PORT: ${{ secrets.PORT }}
+          ACTION_CREATE_ENV_AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+          ACTION_CREATE_ENV_AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+          ACTION_CREATE_ENV_AUTH0_API_AUDIENCE: ${{ secrets.AUTH0_API_AUDIENCE }}
+          ACTION_CREATE_ENV_AUTH0_API_DOMAIN: ${{ secrets.AUTH0_API_DOMAIN }}
+          ACTION_CREATE_ENV_CLIENT_DOMAIN: ${{ secrets.CLIENT_DOMAIN }}
+          ACTION_CREATE_ENV_MONGODB_CONNECT_URI: ${{ secrets.MONGODB_CONNECT_URI }}
+      - name: Create .npmrc 🤫
+        run: echo "${{ secrets.NPMRC }}" > build/.npmrc
       - name: Deploy app to GAE 🚀
         uses: google-github-actions/deploy-appengine@v0.3.0
         with:
