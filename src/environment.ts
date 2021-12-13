@@ -1,4 +1,4 @@
-import { ExpressSecurity } from '@thecurve-tv/express-utils/src/security'
+import { ExpressSecurity } from '@thecurve-tv/express-utils/security'
 import dotenv from 'dotenv'
 dotenv.config()
 

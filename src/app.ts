@@ -40,11 +40,16 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
   res.status(500).send('Something broke!')
 })
 
-mongoose.set('runValidators', true)
-mongoose
-  .connect(<string>environment.MONGODB_CONNECT_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Failed to connect to MongoDB', err))
+export async function onListening(): Promise<void> {
+  mongoose.set('runValidators', true)
+  try {
+    await mongoose.connect(<string>environment.MONGODB_CONNECT_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    console.log('Connected to MongoDB')
+  } catch (err) {
+    console.error('Failed to connect to MongoDB')
+    throw err
+  }
+}

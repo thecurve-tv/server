@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-import { app, apolloServer } from '../app'
+import { app, apolloServer, onListening as appOnListening } from './app'
 import http from 'http'
 
 /**
@@ -84,4 +84,9 @@ function onListening() {
   const addr = server.address()
   const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr?.port
   console.log(`Listening on ${bind}`)
+  appOnListening()
+    .catch(err => {
+      console.error(err)
+      process.exit(1)
+    })
 }
