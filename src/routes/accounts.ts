@@ -1,10 +1,10 @@
 import { NextFunction, Response, Router } from 'express'
 import { body } from 'express-validator'
 
-import { Account, IAccount } from '@thecurve-tv/mongo-models/account'
-import { errorResponse, AuthenticatedRequest, fetchAccount } from '@thecurve-tv/express-utils/session'
 import { environment, security } from '../environment'
-import { IDraftDocument } from '@thecurve-tv/mongo-models/_defaults'
+import { IDraftDocument } from '../models/_defaults'
+import { Account, IAccount } from '../models/account'
+import { errorResponse, AuthenticatedRequest, fetchAccount } from '../util/session'
 
 export const router = Router()
 

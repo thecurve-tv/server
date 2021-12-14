@@ -1,6 +1,6 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
 import { ResolverContext } from '../resolver-context'
-import { IChatPlayer } from '@thecurve-tv/mongo-models/chatPlayer'
+import { IChatPlayer } from '../../models/chatPlayer'
 import { ChatTC, ChatPlayerTC, PlayerTC } from '../types'
 
 // normalised relations

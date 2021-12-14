@@ -1,5 +1,5 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
-import { IChat } from '@thecurve-tv/mongo-models/chat'
+import { IChat } from '../../models/chat'
 import { ResolverContext } from '../resolver-context'
 import { guardResolver } from '../guard'
 import { ChatTC, GameTC } from '../types'

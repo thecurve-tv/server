@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 import { environment, security } from './environment'
 import { router as accountRouter } from './routes/accounts'
 import { getGraphQLMiddleware } from './graphql/graphql'
+import { connectMongoDB } from './mongodb'
 
 export const app = express()
 
@@ -41,15 +42,5 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 })
 
 export async function onListening(): Promise<void> {
-  mongoose.set('runValidators', true)
-  try {
-    await mongoose.connect(<string>environment.MONGODB_CONNECT_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-    console.log('Connected to MongoDB')
-  } catch (err) {
-    console.error('Failed to connect to MongoDB')
-    throw err
-  }
+  connectMongoDB()
 }

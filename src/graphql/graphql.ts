@@ -1,10 +1,10 @@
 import { ApolloError, ApolloServer, AuthenticationError, ExpressContext } from 'apollo-server-express'
 import { RequestHandler, Response } from 'express'
-import Schema from './schema'
 import { environment, security } from '../environment'
-import { AuthenticatedRequest, errorResponse, fetchAccount, fetchAccountUsingJwtPayload } from '@thecurve-tv/express-utils/session'
-import { Account, IAccount } from '@thecurve-tv/mongo-models/account'
+import { Account, IAccount } from '../models/account'
+import { AuthenticatedRequest, errorResponse, fetchAccount, fetchAccountUsingJwtPayload } from '../util/session'
 import { ResolverContext } from './resolver-context'
+import Schema from './schema'
 
 export class GraphErrorResponse extends ApolloError {
   constructor(statusCode: number, description: string, data?: any) {

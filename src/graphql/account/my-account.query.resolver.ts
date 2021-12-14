@@ -1,5 +1,5 @@
 import { SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
-import { Account } from '@thecurve-tv/mongo-models/account'
+import { Account } from '../../models/account'
 import { ResolverContext } from '../resolver-context'
 import { AccountTC } from '../types'
 
