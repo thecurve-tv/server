@@ -1,5 +1,5 @@
 import { ObjectTypeComposerFieldConfigMapDefinition } from 'graphql-compose'
-import { IPhoto } from '@thecurve-tv/mongo-models/photo'
+import { IPhoto } from '../../models/photo'
 import { ResolverContext } from '../resolver-context'
 import { PhotoTC, PlayerTC } from '../types'
 

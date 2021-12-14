@@ -8,15 +8,14 @@
     "prebuild": "rm -rf build",
     "build": "tsc",
     "postbuild": "cp app.yaml package*.json build && echo Build complete. You may now create a .env file in the build directory.",
-    "setup-node": "set NODE_OPTIONS='--unhandled-rejections=strict --trace-deprecation'",
+    "setup-node": "set NODE_OPTIONS='--unhandled-rejections=strict'",
     "test": "ts-node --transpile-only test/run-tests",
     "start": "npm run setup-node && node .",
-    "start:test": "npm run setup-node && ts-node --transpile-only test/start-test-server"
+    "start:dev": "npm run setup-node && ts-node --transpile-only test/start-test-server dev",
+    "start:test": "npm run setup-node && ts-node --transpile-only test/start-test-server test"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.14.0",
-    "@thecurve-tv/express-utils": "^1.0.7",
-    "@thecurve-tv/mongo-models": "^1.0.3",
     "apollo-server-express": "^2.24.0",
     "auth0": "^2.34.2",
     "bson": "^4.5.0",
@@ -44,6 +43,7 @@
     "@types/jest": "^27.0.3",
     "@types/jsonwebtoken": "^8.5.2",
     "@types/morgan": "^1.9.2",
+    "axios": "^0.24.0",
     "jest": "^27.4.4",
     "jest-circus": "^27.4.4",
     "prettier": "^2.3.0",
