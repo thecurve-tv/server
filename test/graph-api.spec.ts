@@ -1,11 +1,17 @@
-import { ResolverContext } from '../src/graphql/resolver-context'
+import { ApolloServer } from 'apollo-server-express'
 import { Account, IAccount } from '../src/models/account'
 import { environment } from './environment'
 import { ensureMongoDBConnected } from './setup'
 import { ensureMongoDBDisconnected } from './teardown'
-import myAccountQueryResolver from '../src/graphql/account/my-account.query.resolver'
+import Schema from '../src/graphql/schema'
 
 let account: IAccount
+let server: ApolloServer
+
+function getMockContext() {
+  let req: any, res: any
+  return { account, req, res }
+}
 
 beforeAll(async () => {
   await ensureMongoDBConnected()
@@ -14,18 +20,64 @@ beforeAll(async () => {
     auth0Id: environment.AUTH0_USER.id,
     email: environment.AUTH0_USER.email
   }])
-  account = await Account.findOne({ auth0Id: environment.AUTH0_USER.id }).lean(true)
+  account = <IAccount>(await Account.findOne({ auth0Id: environment.AUTH0_USER.id }))
+  server = new ApolloServer({
+    schema: Schema,
+    context: getMockContext,
+  })
 })
 afterAll(ensureMongoDBDisconnected)
 
-function getMockContext(): ResolverContext {
-  let req: any, res: any
-  return { account, req, res }
-}
-
-describe('GraphQL/account/myAccount', () => {
+describe('GraphQL/myAccount', () => {
   it('works', async () => {
-    const res = await myAccountQueryResolver.resolve({ context: getMockContext() })
-    expect(res).toMatchObject(account)
+    const res = await server.executeOperation({
+      query: `{
+        myAccount {
+          _id
+          auth0Id
+          email
+        }
+      }`
+    })
+    expect(res.errors).toBeUndefined()
+    expect(res.data?.myAccount).toMatchObject({
+      _id: account.id,
+      auth0Id: account.auth0Id,
+      email: account.email
+    })
+  })
+})
+
+describe('GraphQL/accountById', () => {
+  it('returns own account', async () => {
+    const res = await server.executeOperation({
+      query: `{
+        accountById(_id: "${account.id}") {
+          _id
+          auth0Id
+          email
+        }
+      }`
+    })
+    expect(res.errors).toBeUndefined()
+    expect(res.data?.accountById).toMatchObject({
+      _id: account.id,
+      auth0Id: account.auth0Id,
+      email: account.email
+    })
+  })
+  it('blocks other accounts', async () => {
+    const fakeId = account.id.charAt(0) == 'a' ? `b${account.id.substr(1)}` : `a${account.id.substr(1)}`
+    const res = await server.executeOperation({
+      query: `{
+        accountById(_id: "${fakeId}") {
+          _id
+          auth0Id
+          email
+        }
+      }`
+    })
+    expect(res.errors).toBeUndefined()
+    expect(res.data?.accountById).toBeNull()
   })
 })
