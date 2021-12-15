@@ -11,7 +11,7 @@ export default schemaComposer.createResolver<any, MyAccountQueryResolverArgs>({
   type: AccountTC.getType(),
   args: {},
   resolve: async ({ context }) => {
-    const fullAccountDoc = await Account.findById(context.account._id)
+    const fullAccountDoc = await Account.findById(context.account._id).lean(true)
     return fullAccountDoc
   },
 })
