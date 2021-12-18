@@ -157,3 +157,5 @@ export class ExpressSecurity {
     })
   }
 }
+
+export const security = new ExpressSecurity()

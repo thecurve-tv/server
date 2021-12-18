@@ -1,4 +1,5 @@
 import { Request, RequestHandler, Response } from 'express'
+import { environment } from '../environment'
 import { Account, IAccount } from '../models/account'
 import { JwtRequestUser } from './security'
 
@@ -13,8 +14,14 @@ export interface AuthenticatedRequest extends Request {
 export function fetchAccount(verifyExists = false, projection: any = { _log: 0 }): RequestHandler {
   return (req: AuthenticatedRequest, res, next) => {
     const onFail = () => errorResponse(404, 'Failed to get an account with that access token', res)
-    if (!req.user) return onFail()
-    fetchAccountUsingJwtPayload(req.user, projection)
+    let accountQuery
+    if (environment.PROD) {
+      if (!req.user) return onFail()
+      accountQuery = fetchAccountUsingJwtPayload(req.user, projection)
+    } else {
+      accountQuery = Account.findById(environment.DEV_ACCOUNT_ID, projection)
+    }
+    accountQuery
       .then(account => {
         if (verifyExists && !account) return onFail()
         req.account = account || undefined

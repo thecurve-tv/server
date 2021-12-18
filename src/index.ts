@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 
-/**
+/*
  * Module dependencies.
  */
 
-import { app, apolloServer, onListening as appOnListening } from './app'
 import http from 'http'
+import { app, onListening as appOnListening } from './app'
+import { apolloServer } from './graphql/graphql'
 
-/**
+/*
  * Get port from environment and store in Express.
  */
 
 const port = normalizePort(process.env.PORT || '3000')
 app.set('port', port)
 
-/**
+/*
  * Create HTTP server.
  */
 
@@ -22,7 +23,7 @@ const server = http.createServer(app)
 // Accept subscriptions over WebSocket
 apolloServer.installSubscriptionHandlers(server)
 
-/**
+/*
  * Listen on provided port, on all network interfaces.
  */
 

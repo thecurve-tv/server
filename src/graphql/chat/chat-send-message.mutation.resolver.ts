@@ -1,12 +1,13 @@
+import { ObjectId } from 'bson'
 import { ResolverResolveParams, SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { IAccount } from '../../models/account'
 import { Chat, IChat } from '../../models/chat'
 import { ChatPlayer } from '../../models/chatPlayer'
 import { IPlayer, Player } from '../../models/player'
 import { getActiveGame } from '../game/game-join.mutation.resolver'
-import { GraphErrorResponse } from '../graphql'
 import { MongoID } from '../mongoose-resolvers'
 import { ResolverContext } from '../resolver-context'
+import { GraphErrorResponse } from '../types'
 import { ChatMessage, ChatMessageTC, pubsub } from './chat-messages.subscription.resolver'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
@@ -82,7 +83,7 @@ async function validateChatSendMessageMutation(
       },
     },
     { $unwind: '$player' }, // one player
-    { $match: { 'player.account': accountId } },
+    { $match: { 'player.account': new ObjectId(accountId) } },
     { $project: { 'player._id': 1 } },
   ])
   if (aggregationResult.length == 0) {

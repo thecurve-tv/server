@@ -1,6 +1,5 @@
 import dotenv from 'dotenv'
 dotenv.config()
-import { ExpressSecurity } from './util/security'
 
 export const environment = {
   PROD: !!process.env.PROD,
@@ -15,5 +14,3 @@ export const environment = {
   GOOGLE_PROJECT_ID: process.env.GOOGLE_PROJECT_ID,
   MONGODB_CONNECT_URI: process.env.MONGODB_CONNECT_URI,
 }
-
-export const security = new ExpressSecurity()

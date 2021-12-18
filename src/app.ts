@@ -1,13 +1,14 @@
-import express from 'express'
-import path from 'path'
 import cookieParser from 'cookie-parser'
-import logger from 'morgan'
+import express from 'express'
 import mongoose from 'mongoose'
-
-import { environment, security } from './environment'
-import { router as accountRouter } from './routes/accounts'
-import { getGraphQLMiddleware } from './graphql/graphql'
+import logger from 'morgan'
+import path from 'path'
+import { environment } from './environment'
+import { apolloServer } from './graphql/graphql'
 import { connectMongoDB } from './mongodb'
+import { router as testRouter } from './routes/_test'
+import { router as accountRouter } from './routes/accounts'
+import { security } from './util/security'
 
 export const app = express()
 
@@ -19,7 +20,6 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(security.enableCors())
 
-export const apolloServer = getGraphQLMiddleware()
 apolloServer.applyMiddleware({
   app,
   path: '/graphql',
@@ -32,6 +32,9 @@ apolloServer.applyMiddleware({
 })
 
 app.use('/accounts', accountRouter)
+if (!environment.PROD) {
+  app.use('/_test', testRouter)
+}
 
 app.use('*', (_req, res) => {
   res.sendStatus(404)
@@ -42,5 +45,5 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 })
 
 export async function onListening(): Promise<void> {
-  connectMongoDB()
+  await connectMongoDB()
 }

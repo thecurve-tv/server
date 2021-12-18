@@ -1,10 +1,11 @@
 import { NextFunction, Response, Router } from 'express'
 import { body } from 'express-validator'
 
-import { environment, security } from '../environment'
+import { environment } from '../environment'
 import { IDraftDocument } from '../models/_defaults'
 import { Account, IAccount } from '../models/account'
 import { errorResponse, AuthenticatedRequest, fetchAccount } from '../util/session'
+import { security } from '../util/security'
 
 export const router = Router()
 

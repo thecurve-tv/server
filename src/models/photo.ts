@@ -29,4 +29,4 @@ export interface IPhoto extends IDefaultProperties {
   alt: string
 }
 
-export const Photo = model('Photo', photoSchema)
+export const Photo = model<IPhoto>('Photo', photoSchema)

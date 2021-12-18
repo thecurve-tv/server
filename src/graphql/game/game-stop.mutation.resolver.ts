@@ -1,9 +1,8 @@
 import { ObjectId } from 'bson'
 import { ResolverResolveParams, SchemaComposer, schemaComposer as _schemaComposer } from 'graphql-compose'
 import { Game, IGame } from '../../models/game'
-import { GraphErrorResponse } from '../graphql'
 import { ResolverContext } from '../resolver-context'
-import { GameTC } from '../types'
+import { GameTC, GraphErrorResponse } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 
