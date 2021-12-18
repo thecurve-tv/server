@@ -6,9 +6,8 @@ import { IChat, Chat } from '../../models/chat'
 import { Game, IGame } from '../../models/game'
 import { IPlayer, Player } from '../../models/player'
 import { IDraftDocument } from '../../models/_defaults'
-import { GraphErrorResponse } from '../graphql'
 import { ResolverContext } from '../resolver-context'
-import { GameTC, PlayerTC, ChatTC } from '../types'
+import { GameTC, PlayerTC, ChatTC, GraphErrorResponse } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 const MIN_GAME_DURATION = 3 * 60 * 60 * 1000 // 3 hours
@@ -44,17 +43,20 @@ export default schemaComposer.createResolver<any, GameStartMutationResolverArgs>
   resolve: resolveGameStartMutation,
 })
 
-async function resolveGameStartMutation({
-  args,
-  context,
-}: ResolverResolveParams<any, ResolverContext, GameStartMutationResolverArgs>): Promise<GameStartMutationResolverResult> {
+async function resolveGameStartMutation(
+  {
+    args,
+    context,
+  }: ResolverResolveParams<any, ResolverContext, GameStartMutationResolverArgs>
+): Promise<GameStartMutationResolverResult> {
   const now = Date.now()
-  await validateGameStartMutation(args, context.account._id, now)
+  const accountId = context.account._id
+  await validateGameStartMutation(args, accountId, now)
   const gameId: IDraftDocument<IGame>['_id'] = new ObjectId()
   const chatId: IDraftDocument<IChat>['_id'] = new ObjectId()
   const gameDoc: IDraftDocument<IGame> = {
     _id: gameId,
-    hostAccount: context.account._id,
+    hostAccount: accountId,
     maxPlayerCount: args.maxPlayerCount,
     startTime: now,
     endTime: now + args.duration,
@@ -68,7 +70,7 @@ async function resolveGameStartMutation({
   const hostPlayerDoc: IDraftDocument<IPlayer> = {
     _id: new ObjectId(),
     game: gameId,
-    account: context.account._id,
+    account: accountId,
     name: args.hostPlayerName,
     age: 18,
     job: '',

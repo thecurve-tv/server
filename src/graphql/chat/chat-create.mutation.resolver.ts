@@ -7,10 +7,9 @@ import { IGame } from '../../models/game'
 import { IPlayer, Player } from '../../models/player'
 import { IDraftDocument } from '../../models/_defaults'
 import { getActiveGame } from '../game/game-join.mutation.resolver'
-import { GraphErrorResponse } from '../graphql'
 import { ResolverContext } from '../resolver-context'
 import { MongoID } from '../mongoose-resolvers'
-import { ChatPlayerTC, ChatTC } from '../types'
+import { ChatPlayerTC, ChatTC, GraphErrorResponse } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 

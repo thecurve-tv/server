@@ -1,39 +1,35 @@
-import { ApolloError, ApolloServer, AuthenticationError, ExpressContext } from 'apollo-server-express'
+import { ApolloServer, AuthenticationError, ExpressContext } from 'apollo-server-express'
 import { RequestHandler, Response } from 'express'
-import { environment, security } from '../environment'
+import { environment } from '../environment'
 import { Account, IAccount } from '../models/account'
-import { AuthenticatedRequest, errorResponse, fetchAccount, fetchAccountUsingJwtPayload } from '../util/session'
+import { security } from '../util/security'
+import { AuthenticatedRequest, fetchAccount, fetchAccountUsingJwtPayload } from '../util/session'
 import { ResolverContext } from './resolver-context'
 import Schema from './schema'
+import { GraphErrorResponse } from './types'
 
-export class GraphErrorResponse extends ApolloError {
-  constructor(statusCode: number, description: string, data?: any) {
-    super(description, `${statusCode}`, errorResponse(statusCode, description, undefined, data))
+export const apolloServer = new ApolloServer({
+  schema: Schema,
+  playground: !environment.PROD,
+  debug: !environment.PROD,
+  introspection: true,
+  tracing: true,
+  context: getGraphQLContext,
+})
+
+async function getGraphQLContext(context: ExpressContext & { account?: any }): Promise<ResolverContext> {
+  const defaultContext: ResolverContext = { ...context, account: context.account }
+  let account: IAccount | null = defaultContext.account
+  if (environment.PROD || account == null) {
+    try {
+      account = await getAccountFromExpressContext(context)
+    } catch (err: any) {
+      // Only execution errors are caught here. Authentication errors simply result in `account === null`
+      if (!environment.PROD) console.error('GraphQL Authentication broke!', err)
+      throw new GraphErrorResponse(500, err.message || 'GraphQL Authentication broke!')
+    }
+    if (!account) throw new AuthenticationError(`You must be logged in to use the GraphQL endpoint`)
   }
-}
-
-export function getGraphQLMiddleware() {
-  return new ApolloServer({
-    schema: Schema,
-    playground: !environment.PROD,
-    debug: !environment.PROD,
-    introspection: true,
-    tracing: true,
-    context: getGraphQLContext,
-  })
-}
-
-async function getGraphQLContext(context: ExpressContext): Promise<ResolverContext> {
-  const defaultContext: Omit<ResolverContext, 'account'> = { req: context.req, res: context.res }
-  let account: IAccount | null
-  try {
-    account = await getAccountFromExpressContext(context)
-  } catch (err: any) {
-    // Only execution errors are caught here. Authentication errors simply result in `account === null`
-    if (!environment.PROD) console.error('GraphQL Authentication broke!', err)
-    throw new GraphErrorResponse(500, err.message || 'GraphQL Authentication broke!')
-  }
-  if (!account) throw new AuthenticationError(`You must be logged in to use the GraphQL endpoint`)
   return { ...defaultContext, account }
 }
 

@@ -8,9 +8,9 @@ import { ChatPlayer } from '../../models/chatPlayer'
 import { IPlayer, Player } from '../../models/player'
 import { getActiveGame } from '../game/game-join.mutation.resolver'
 import { GooglePubSub } from '../google-pub-sub'
-import { GraphErrorResponse } from '../graphql'
 import { MongoID } from '../mongoose-resolvers'
 import { ResolverContext } from '../resolver-context'
+import { GraphErrorResponse } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 

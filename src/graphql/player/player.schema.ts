@@ -6,7 +6,7 @@ import { guardResolver } from '../guard'
 import { AccountTC, GameTC, PhotoTC, PlayerTC } from '../types'
 import CanEditPlayerGuard from './can-edit-player.guard'
 import ContainsOnlyCommonPlayersGuard from './contains-only-common-players.guard'
-import { PlayerChatsRelationResolver } from './player.resolver'
+import { PlayerChatsRelationResolver } from './player-chats.relation.resolver'
 
 // normalised relations
 PlayerTC.addRelation('account', {
