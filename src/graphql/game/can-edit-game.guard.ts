@@ -1,10 +1,10 @@
 import { ObjectId } from 'bson'
-import { Game, IGame } from '../../models/game'
-import { GraphErrorResponse } from '../graphql'
+import { IGame } from '../../models/game'
 import { ResolverContext } from '../resolver-context'
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { UpdateByIdArgs } from '../mongoose-resolvers'
 import { getActiveGame } from './game-join.mutation.resolver'
+import { GraphErrorResponse } from '../types'
 
 export default class CanEditGameGuard extends Guard<ResolverContext, UpdateByIdArgs, IGame> {
   constructor() {

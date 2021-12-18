@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson'
 import { Game, IGame } from '../../models/game'
-import { GraphErrorResponse } from '../graphql'
 import { ResolverContext } from '../resolver-context'
 import { Guard, GuardInput, GuardOutput } from '../guard'
+import { GraphErrorResponse } from '../types'
 
 interface IsGameHostGuardArgs {
   _id?: string
