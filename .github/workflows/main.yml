@@ -40,7 +40,7 @@ jobs:
         run: npm ci
       - name: Audit NPM packages ✔🕵️‍♀️
         # only fails the audit if the results include a vulnerability with a level of moderate or higher
-        run: npm audit --audit-level=moderate --production &> /dev/null
+        run: npm audit --audit-level=moderate --production
   build:
     runs-on: ubuntu-latest
     steps:
