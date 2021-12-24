@@ -12,7 +12,7 @@ const minigameSchema = new Schema(
     },
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IMinigame extends IDefaultProperties {

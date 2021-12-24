@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { environment } from './environment'
 
-const waitingPromises: [number, Function][] = []
+const waitingPromises: [number, () => void][] = []
 
 /**
  * Wait for synchronization with the main thread
@@ -10,7 +10,7 @@ const waitingPromises: [number, Function][] = []
 export async function awaitState(state: number): Promise<void> {
   return new Promise(resolve => {
     if (mongoose.connection.readyState == state) return resolve()
-    waitingPromises.push([state, resolve])
+    waitingPromises.push([ state, resolve ])
   })
 }
 

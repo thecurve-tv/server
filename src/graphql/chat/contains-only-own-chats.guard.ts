@@ -7,15 +7,15 @@ import { FindManyArgs } from '../mongoose-resolvers'
 import { ObjectId } from 'bson'
 import { Game } from '../../models/game'
 
-export default class ContainsOnlyOwnChatsGuard extends Guard<ResolverContext, FindManyArgs, any> {
+export default class ContainsOnlyOwnChatsGuard extends Guard<ResolverContext, FindManyArgs, unknown> {
   constructor() {
     super('egress')
   }
-  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, any>): Promise<void | GuardOutput<FindManyArgs, any>> {
+  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, unknown>): Promise<void | GuardOutput<FindManyArgs, unknown>> {
     const chats: IChat[] = data
     if (!chats || chats.length == 0) return
     const uniqueChatIdStrs = new Set(chats.map(chat => chat._id.toHexString()))
-    const chatIds = [...uniqueChatIdStrs].map(_id => new ObjectId(_id))
+    const chatIds = [ ...uniqueChatIdStrs ].map(_id => new ObjectId(_id))
     const requesterAccountId = context.account._id
     const idsOfChatsWhoseGameIsHostedByRequester = await getIdsOfChatsWhoseGameIsHostedByAccount(chatIds, requesterAccountId)
     const idsOfChatsWhoseGameIsNotHostedByRequester = chatIds.filter(_id => !idsOfChatsWhoseGameIsHostedByRequester.has(_id.toHexString()))

@@ -43,7 +43,7 @@ const gameSchema = new Schema(
     },
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IGame extends IDefaultProperties {

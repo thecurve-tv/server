@@ -16,7 +16,7 @@ export const PhotoTC = composeMongoose(Photo)
 export const PlayerTC = composeMongoose(Player)
 
 export class GraphErrorResponse extends ApolloError {
-  constructor(statusCode: number, description: string, data?: any) {
+  constructor(statusCode: number, description: string, data?: unknown) {
     super(description, `${statusCode}`, errorResponse(statusCode, description, undefined, data))
   }
 }

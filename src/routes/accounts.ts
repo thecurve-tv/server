@@ -1,4 +1,4 @@
-import { NextFunction, Response, Router } from 'express'
+import { Router } from 'express'
 import { body } from 'express-validator'
 
 import { environment } from '../environment'
@@ -9,7 +9,7 @@ import { security } from '../util/security'
 
 export const router = Router()
 
-router.get('', security.ensureAuthenticated(), fetchAccount(), (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('', security.ensureAuthenticated(), fetchAccount(), (req: AuthenticatedRequest, res) => {
   if (!req.account) return errorResponse(404, 'Failed to get an account with that access token', res)
   res.send(req.account)
 })
@@ -27,10 +27,10 @@ router.post(
           auth0Id: req.body.auth0Id,
           email: req.body.email,
         }
-        Account.create([accountDoc], { validateBeforeSave: true })
+        Account.create([ accountDoc ], { validateBeforeSave: true })
           .then(docs => res.status(201).send(docs[0]))
           .catch(next)
       })
       .catch(next)
-  }
+  },
 )

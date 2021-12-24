@@ -49,7 +49,7 @@ const playerSchema = new Schema(
     },
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IPlayer extends IDefaultProperties {

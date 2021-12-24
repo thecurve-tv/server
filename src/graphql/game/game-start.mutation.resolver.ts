@@ -25,7 +25,7 @@ export interface GameStartMutationResolverResult {
   chat: IChat
 }
 
-export default schemaComposer.createResolver<any, GameStartMutationResolverArgs>({
+export default schemaComposer.createResolver<unknown, GameStartMutationResolverArgs>({
   name: 'GameStartMutationResolver',
   type: schemaComposer.createObjectTC({
     name: 'GameStartMutationResolverResult',
@@ -47,7 +47,7 @@ async function resolveGameStartMutation(
   {
     args,
     context,
-  }: ResolverResolveParams<any, ResolverContext, GameStartMutationResolverArgs>
+  }: ResolverResolveParams<unknown, ResolverContext, GameStartMutationResolverArgs>,
 ): Promise<GameStartMutationResolverResult> {
   const now = Date.now()
   const accountId = context.account._id
@@ -81,9 +81,9 @@ async function resolveGameStartMutation(
     await startSession()
   ).withTransaction(async session => {
     await Promise.all([
-      Game.create([gameDoc], { validateBeforeSave: true, session }),
-      Player.create([hostPlayerDoc], { validateBeforeSave: true, session }),
-      Chat.create([curveChatDoc], { validateBeforeSave: true, session }),
+      Game.create([ gameDoc ], { validateBeforeSave: true, session }),
+      Player.create([ hostPlayerDoc ], { validateBeforeSave: true, session }),
+      Chat.create([ curveChatDoc ], { validateBeforeSave: true, session }),
     ]).then(docs => {
       result = {
         game: docs[0][0],
@@ -107,7 +107,7 @@ async function validateGameStartMutation(args: GameStartMutationResolverArgs, ac
       hostAccount: accountId,
       $or: [{ endTime: { $gt: now } }, { pausedTime: { $not: { $eq: undefined } } }],
     },
-    { _id: 1, endTime: 1, pausedTime: 1 }
+    { _id: 1, endTime: 1, pausedTime: 1 },
   )
   if (existingGame) throw new GraphErrorResponse(403, 'You may not host > 1 Game at a time')
 }

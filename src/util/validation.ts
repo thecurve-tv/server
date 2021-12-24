@@ -10,12 +10,12 @@ export function ensureValidated(...validators: ValidationChain[]): RequestHandle
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
     next()
   }
-  return [...validators, validator]
+  return [ ...validators, validator ]
 }
 
 /**
  * Escapes a given string for use in a regex expression
  */
 export function escapeRegex(s: string) {
-  return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+  return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
 }

@@ -20,7 +20,7 @@ const photoSchema = new Schema(
     },
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IPhoto extends IDefaultProperties {

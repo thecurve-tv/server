@@ -14,15 +14,15 @@ export const router = Router()
 export async function clearGames(accountId: string) {
   const gameIds = (await Game.find(
     { hostAccount: accountId },
-    { _id: 1 }
+    { _id: 1 },
   )).map(g => g._id)
   const playerIds = (await Player.find(
     { game: { $in: gameIds } },
-    { _id: 1 }
+    { _id: 1 },
   )).map(p => p._id)
   const chatIds = (await Chat.find(
     { game: { $in: gameIds } },
-    { _id: 1 }
+    { _id: 1 },
   )).map(c => c._id)
   const session = await startSession()
   await session.withTransaction(async () => {
@@ -32,12 +32,12 @@ export async function clearGames(accountId: string) {
       ChatPlayer.deleteMany({
         $or: [
           { chat: { $in: chatIds } },
-          { player: { $in: playerIds } }
-        ]
+          { player: { $in: playerIds } },
+        ],
       }, { session }),
       Chat.deleteMany({ _id: { $in: chatIds } }, { session }),
       Player.deleteMany({ _id: { $in: playerIds } }, { session }),
-      Game.deleteMany({ _id: { $in: gameIds } }, { session })
+      Game.deleteMany({ _id: { $in: gameIds } }, { session }),
     ])
   })
 }
@@ -52,7 +52,7 @@ router.post('/clearGames', fetchAccount(), (req: AuthenticatedRequest, res, next
 router.post('/execGraphql', (req, res, next) => {
   apolloServer.executeOperation(
     req.body.request,
-    { account: req.body.account, req, res }
+    { account: req.body.account, req, res },
   )
     .then(gRes => res.send(gRes))
     .catch(next)

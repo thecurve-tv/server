@@ -13,7 +13,7 @@ const roomSchema = new Schema(
     },
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IRoom extends IDefaultProperties {

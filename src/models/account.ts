@@ -20,7 +20,7 @@ const accountSchema = new Schema(
     // Remember to update Guards that redact fields when you add fields here
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IAccount extends IDefaultProperties {

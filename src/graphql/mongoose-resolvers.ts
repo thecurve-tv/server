@@ -1,17 +1,17 @@
 export type MongoID = string
 
 export interface FindByIdArgs {
-  _id: any
+  _id: unknown
 }
 
 export interface FindManyArgs {
-  filter?: any
+  filter?: unknown
   limit?: number
   skip?: number
-  sort?: string | string[] | Record<string, any>
+  sort?: string | string[] | Record<string, unknown>
 }
 
 export interface UpdateByIdArgs {
-  _id: any
-  record: any
+  _id: unknown
+  record: unknown
 }

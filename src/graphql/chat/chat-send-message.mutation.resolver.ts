@@ -19,10 +19,10 @@ export interface ChatSendMessageMutationResolverArgs {
 
 export interface ChatSendMessageMutationResolverResult {
   chatId: MongoID
-  message: String
+  message: string
 }
 
-export default schemaComposer.createResolver<any, ChatSendMessageMutationResolverArgs>({
+export default schemaComposer.createResolver<unknown, ChatSendMessageMutationResolverArgs>({
   name: 'ChatTestMutationResolver',
   type: ChatMessageTC,
   args: {
@@ -35,7 +35,7 @@ export default schemaComposer.createResolver<any, ChatSendMessageMutationResolve
 async function resolveChatSendMessageMutation({
   args,
   context,
-}: ResolverResolveParams<any, ResolverContext, ChatSendMessageMutationResolverArgs>): Promise<ChatSendMessageMutationResolverResult> {
+}: ResolverResolveParams<unknown, ResolverContext, ChatSendMessageMutationResolverArgs>): Promise<ChatSendMessageMutationResolverResult> {
   /**
    * Validate:
    * $- chat must exist
@@ -47,7 +47,7 @@ async function resolveChatSendMessageMutation({
    * $- publish message
    */
   const now = Date.now()
-  const [chat, playerId] = await validateChatSendMessageMutation(args, context.account._id, now)
+  const [ chat, playerId ] = await validateChatSendMessageMutation(args, context.account._id, now)
   const chatMessage: ChatMessage = {
     chatId: chat._id.toHexString(),
     fromPlayerId: playerId.toHexString(),
@@ -61,7 +61,7 @@ async function resolveChatSendMessageMutation({
 async function validateChatSendMessageMutation(
   args: ChatSendMessageMutationResolverArgs,
   accountId: IAccount['_id'],
-  now: number
+  now: number,
 ): Promise<[IChat, IPlayer['_id']]> {
   if (args.message.length < 1 || args.message.length > 500) {
     throw new GraphErrorResponse(400, 'Messages must be between 1 and 500 characters long (inclusive)')
@@ -89,5 +89,5 @@ async function validateChatSendMessageMutation(
   if (aggregationResult.length == 0) {
     throw new GraphErrorResponse(403, 'You must be a player in that chat to send messages to it')
   }
-  return [chat, aggregationResult[0].player._id]
+  return [ chat, aggregationResult[0].player._id ]
 }

@@ -2,6 +2,7 @@ import { ApolloServer, AuthenticationError, ExpressContext } from 'apollo-server
 import { RequestHandler, Response } from 'express'
 import { environment } from '../environment'
 import { Account, IAccount } from '../models/account'
+import { IDraftDocument } from '../models/_defaults'
 import { security } from '../util/security'
 import { AuthenticatedRequest, fetchAccount, fetchAccountUsingJwtPayload } from '../util/session'
 import { ResolverContext } from './resolver-context'
@@ -17,20 +18,19 @@ export const apolloServer = new ApolloServer({
   context: getGraphQLContext,
 })
 
-async function getGraphQLContext(context: ExpressContext & { account?: any }): Promise<ResolverContext> {
-  const defaultContext: ResolverContext = { ...context, account: context.account }
-  let account: IAccount | null = defaultContext.account
+async function getGraphQLContext(context: ExpressContext & { account?: IDraftDocument<IAccount> }): Promise<ResolverContext> {
+  let account: IDraftDocument<IAccount> | null = context.account || null
   if (environment.PROD || account == null) {
     try {
       account = await getAccountFromExpressContext(context)
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Only execution errors are caught here. Authentication errors simply result in `account === null`
       if (!environment.PROD) console.error('GraphQL Authentication broke!', err)
-      throw new GraphErrorResponse(500, err.message || 'GraphQL Authentication broke!')
+      throw new GraphErrorResponse(500, (err as Error).message || 'GraphQL Authentication broke!')
     }
     if (!account) throw new AuthenticationError('You must be logged in to use the GraphQL endpoint')
   }
-  return { ...defaultContext, account }
+  return { ...context, account: (account as IAccount) }
 }
 
 async function getAccountFromExpressContext({ connection, req, res }: ExpressContext): Promise<IAccount | null> {
@@ -56,7 +56,7 @@ async function authenticateGraphRequest(req: AuthenticatedRequest, res: Response
   const authenticationChain = security.ensureAuthenticated()
   const executeRequestHandler = (handler: RequestHandler) => {
     return new Promise<boolean>((resolve, reject) => {
-      handler(req, res, (err?: any) => {
+      handler(req, res, (err?: unknown) => {
         if (err) return reject(err)
         resolve(false)
       })

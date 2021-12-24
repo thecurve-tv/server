@@ -4,18 +4,18 @@ import { ResolverContext } from '../resolver-context'
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindManyArgs } from '../mongoose-resolvers'
 
-export default class ContainsOnlyCommonPlayersGuard extends Guard<ResolverContext, FindManyArgs, any> {
+export default class ContainsOnlyCommonPlayersGuard extends Guard<ResolverContext, FindManyArgs, unknown> {
   constructor() {
     super('egress')
   }
-  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, any>): Promise<void | GuardOutput<FindManyArgs, any>> {
+  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, unknown>): Promise<void | GuardOutput<FindManyArgs, unknown>> {
     const players: IPlayer[] = data
     // the game field might not have been requested, so fetch it
     const playersGameIdsDoc = await Player.find({ _id: { $in: players.map(p => p._id) } }, { game: 1 })
     const playerIdToGameIdMap = new Map(
       playersGameIdsDoc.map(player => {
-        return [player._id.toHexString(), (<ObjectId>player.game).toHexString()]
-      })
+        return [ player._id.toHexString(), (<ObjectId>player.game).toHexString() ]
+      }),
     )
     // get ids of all the games requester has played in
     const myGameIdsDoc = await Player.find({ account: context.account._id }, { game: 1 })

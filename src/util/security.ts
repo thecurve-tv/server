@@ -75,14 +75,14 @@ export class ExpressSecurity {
         {
           // Validate the audience and the issuer.
           audience: environment.AUTH0_API_AUDIENCE,
-          issuer: [`${environment.AUTH0_DOMAIN}/`],
-          algorithms: ['RS256'],
+          issuer: [ `${environment.AUTH0_DOMAIN}/` ],
+          algorithms: [ 'RS256' ],
         },
         async (err, payload) => {
           if (err) return reject(err)
           if (requiredScopes) await this.verifyJwtScopes(requiredScopes, payload?.scope)
           resolve(payload)
-        }
+        },
       )
     })
   }
@@ -135,7 +135,7 @@ export class ExpressSecurity {
   }
 
   ensureAuthenticated(...scopes: string[]) {
-    const handlers: RequestHandler[] = [this.checkJwt]
+    const handlers: RequestHandler[] = [ this.checkJwt ]
     if (scopes.length != 0) handlers.push(this.checkJwtScopes(scopes))
     return handlers
   }

@@ -12,7 +12,7 @@ const rankingSchema = new Schema(
     },
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IRanking extends IDefaultProperties {

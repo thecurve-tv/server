@@ -76,19 +76,19 @@ export class GooglePubSubAsyncIterator<TPayload> implements AsyncIterator<TPaylo
   constructor(
     /**
      * another case of dumb method signatures in {@link PubsubEngine.asyncIterator} where the inferred type `T` is required.
-     * so we use `any` to circumvent this restriction
+     * so we use `unknown` to circumvent this restriction
      */
-    private engine: GooglePubSub<any>,
+    private engine: GooglePubSub<unknown>,
     private subscriptionId: string,
-    options: GooglePubSubSubscribeOptions<any>
+    options: GooglePubSubSubscribeOptions<unknown>,
   ) {
     this.isRunning = true
     this.subscriptionNumber$ = of(undefined).pipe(
       switchMap(() => this.engine.subscribe(this.subscriptionId, this.onMessageOrClose.bind(this), options)),
       shareReplay(1), // call subscribe() once, replay the value afterwards
       // complete the Observable once the next value is requested & the iterator no longer running
-      // this frees up resources in case any other subscribers are listening but aren't processing input
-      takeWhile(() => this.isRunning)
+      // this frees up resources in case unknown other subscribers are listening but aren't processing input
+      takeWhile(() => this.isRunning),
     )
     this.messageQueue = new ReactiveDoubleEndedQueue()
   }
@@ -104,9 +104,9 @@ export class GooglePubSubAsyncIterator<TPayload> implements AsyncIterator<TPaylo
         take(1),
         switchMap(_ => {
           return new Promise<IteratorResult<TPayload>>(resolve => this.messageQueue.consume(resolve))
-        })
+        }),
       ),
-      { defaultValue: { value: undefined, done: true } }
+      { defaultValue: { value: undefined, done: true } },
     )
   }
 
@@ -115,7 +115,7 @@ export class GooglePubSubAsyncIterator<TPayload> implements AsyncIterator<TPaylo
     return { value: undefined, done: true }
   }
 
-  public async throw(err: any): Promise<never> {
+  public async throw(err: unknown): Promise<never> {
     await this.emptyMessageQueue()
     return Promise.reject(err)
   }
