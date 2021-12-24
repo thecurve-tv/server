@@ -29,7 +29,7 @@ async function notifyWaiters() {
   }
 }
 
-export async function connectMongoDB(): Promise<void> {
+export async function connectMongoDB(uri?: string): Promise<void> {
   const state = mongoose.connection.readyState
   if (state != 0) {
     const stateStr =
@@ -41,7 +41,8 @@ export async function connectMongoDB(): Promise<void> {
   }
   mongoose.set('runValidators', true)
   try {
-    await mongoose.connect(<string>environment.MONGODB_CONNECT_URI, {
+    if (uri == null) uri = <string>environment.MONGODB_CONNECT_URI
+    await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })

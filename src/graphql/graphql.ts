@@ -28,7 +28,7 @@ async function getGraphQLContext(context: ExpressContext & { account?: any }): P
       if (!environment.PROD) console.error('GraphQL Authentication broke!', err)
       throw new GraphErrorResponse(500, err.message || 'GraphQL Authentication broke!')
     }
-    if (!account) throw new AuthenticationError(`You must be logged in to use the GraphQL endpoint`)
+    if (!account) throw new AuthenticationError('You must be logged in to use the GraphQL endpoint')
   }
   return { ...defaultContext, account }
 }
@@ -67,7 +67,7 @@ async function authenticateGraphRequest(req: AuthenticatedRequest, res: Response
   }
   for (const authenticator of authenticationChain) {
     try {
-      let responseSent = await executeRequestHandler(authenticator)
+      const responseSent = await executeRequestHandler(authenticator)
       // the handler preemptively sent a response so we don't know the account associated with the request
       if (responseSent) return null
     } catch (err) {
@@ -76,7 +76,7 @@ async function authenticateGraphRequest(req: AuthenticatedRequest, res: Response
   }
   const verifyAccountExists = true
   const fetchAccountHandler = fetchAccount(verifyAccountExists)
-  let responseSent = await executeRequestHandler(fetchAccountHandler)
+  const responseSent = await executeRequestHandler(fetchAccountHandler)
   if (responseSent) return null
   return req.account || null
 }

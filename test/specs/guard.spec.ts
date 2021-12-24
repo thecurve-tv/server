@@ -1,19 +1,19 @@
 import { schemaComposer } from 'graphql-compose'
-import { Guard, GuardInput, GuardOutput, guardResolver } from '../src/graphql/guard'
+import { Guard, GuardInput, GuardOutput, guardResolver } from '../../src/graphql/guard'
 
 interface TArgs {
-  text: String
+  text: string
 }
 
 const testResolver = schemaComposer.createResolver({
   name: 'Test Resolver',
   type: 'String!',
   args: {
-    text: 'String!'
+    text: 'String!',
   },
   resolve: ({ args }) => {
     return args.text
-  }
+  },
 })
 
 describe('GraphQL::ingress guard', () => {
@@ -21,11 +21,11 @@ describe('GraphQL::ingress guard', () => {
 
   test('transforms input', async () => {
     let transformedInput = initialInput
-    class IngressGuard extends Guard<any, TArgs, String> {
+    class IngressGuard extends Guard<unknown, TArgs, string> {
       constructor() {
         super('ingress')
       }
-      async check(input: GuardInput<any, TArgs, String>): Promise<void | GuardOutput<TArgs, String>> {
+      async check(input: GuardInput<unknown, TArgs, string>): Promise<void | GuardOutput<TArgs, string>> {
         transformedInput = `${input.args.text} - transformed`
         return { args: { text: transformedInput } }
       }
@@ -37,11 +37,11 @@ describe('GraphQL::ingress guard', () => {
   })
 
   test('blocks entry to resolver', async () => {
-    class IngressGuard extends Guard<any, TArgs, String> {
+    class IngressGuard extends Guard<unknown, TArgs, string> {
       constructor() {
         super('ingress')
       }
-      async check(_input: GuardInput<any, TArgs, String>): Promise<void | GuardOutput<TArgs, String>> {
+      async check(_input: GuardInput<unknown, TArgs, string>): Promise<void | GuardOutput<TArgs, string>> {
         throw new Error('blocked')
       }
     }

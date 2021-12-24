@@ -4,6 +4,7 @@
     "preserveConstEnums": true,
     "outDir": "build",
     "moduleResolution": "Node",
+    "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

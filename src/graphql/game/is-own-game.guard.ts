@@ -12,7 +12,7 @@ export default class IsOwnGameGuard extends Guard<ResolverContext, FindByIdArgs,
   }
   async check({ context, data }: GuardInput<ResolverContext, FindByIdArgs, IGame>): Promise<void | GuardOutput<FindByIdArgs, IGame>> {
     if (!data) return
-    return await isOwnGame(data, context.account._id)
+    return await isOwnGame(data, new ObjectId(context.account._id))
   }
 }
 
