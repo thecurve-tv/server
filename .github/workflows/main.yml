@@ -51,7 +51,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install NPM packages 📦
         run: npm ci
-      - run: npm run format
       - name: Build server 🛠
         run: npm run build
       - name: Upload deployment artifacts ⛅
