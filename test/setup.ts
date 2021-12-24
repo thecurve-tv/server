@@ -1,6 +1,5 @@
 import { ApolloServer, ExpressContext } from 'apollo-server-express'
 import { ObjectId } from 'bson'
-import { GraphQLResponse } from 'graphql-extensions'
 import mongoose from 'mongoose'
 import Schema from '../src/graphql/schema'
 import { Account, IAccount } from '../src/models/account'
