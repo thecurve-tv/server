@@ -18,19 +18,98 @@ afterAll(ensureMongoDBDisconnected)
 /* ==================== */
 
 describe('relation/hostAccount', () => {
-  it.todo('works')
+  it('works', async () => {
+    const res = await expectOperationToSucceed(server, {
+      query: `mutation {
+          gameStart(
+            hostPlayerName: "${mockPlayers[0].name}"
+            maxPlayerCount: 4
+            duration: ${minGameDuration}
+          ) {
+            game {
+              hostAccount {
+                _id
+              }
+            }
+          }
+        }`,
+    })
+    expect(res.data?.gameStart?.game?.hostAccount?._id).toEqual(mockPlayers[0].account._id)
+  })
 })
 
 describe('relation/mainChat', () => {
-  it.todo('works')
+  it('works', async () => {
+    const res = await expectOperationToSucceed(server, {
+      query: `mutation {
+          gameStart(
+            hostPlayerName: "${mockPlayers[0].name}"
+            maxPlayerCount: 4
+            duration: ${minGameDuration}
+          ) {
+            game {
+              mainChat {
+                _id
+                name
+              }
+            }
+          }
+        }`,
+    })
+    const chat = res.data?.gameStart.game.mainChat
+    expect(chat._id).toBeTruthy()
+    expect(chat.name).toEqual('Curve Chat')
+  })
 })
 
 describe('relation/chats', () => {
-  it.todo('works')
+  it('works', async () => {
+    const res = await expectOperationToSucceed(server, {
+      query: `mutation {
+          gameStart(
+            hostPlayerName: "${mockPlayers[0].name}"
+            maxPlayerCount: 4
+            duration: ${minGameDuration}
+          ) {
+            game {
+              chats {
+                _id
+                name
+              }
+            }
+          }
+        }`,
+    })
+    const chats = res.data?.gameStart.game.chats
+    expect(chats).toHaveLength(1)
+    expect(chats[0]._id).toBeTruthy()
+    expect(chats[0].name).toEqual('Curve Chat')
+  })
 })
 
 describe('relation/players', () => {
-  it.todo('works')
+  it('works', async () => {
+    const res = await expectOperationToSucceed(server, {
+      query: `mutation {
+          gameStart(
+            hostPlayerName: "${mockPlayers[0].name}"
+            maxPlayerCount: 4
+            duration: ${minGameDuration}
+          ) {
+            game {
+              players {
+                _id
+                name
+              }
+            }
+          }
+        }`,
+    })
+    const players = res.data?.gameStart.game.players
+    expect(players).toHaveLength(1)
+    expect(players[0]._id).toBeTruthy()
+    expect(players[0].name).toEqual(mockPlayers[0].name)
+  })
 })
 
 describe('query/gameById', () => {

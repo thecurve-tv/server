@@ -34,16 +34,14 @@ export function prepareApolloServer(account?: IAccount): ApolloServer {
     debug: true,
     tracing: true,
     context: (context: ExpressContext & { account?: IDraftDocument<IAccount> }) => {
-      if (!context.account) {
-        context = {
-          ...context,
-          account: account || mongo.accounts[0],
-        }
+      context.account = context.account || account || mongo.accounts[0]
+      return {
+        ...context,
+        account: {
+          ...context.account,
+          _id: new ObjectId(<string>context.account._id),
+        },
       }
-      if (context.account?._id) {
-        context.account._id = new ObjectId(<string>context.account._id)
-      }
-      return context
     },
   })
 }
