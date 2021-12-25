@@ -5,6 +5,7 @@ import { Account, IAccount } from '../models/account'
 import { IDraftDocument } from '../models/_defaults'
 import { security } from '../util/security'
 import { AuthenticatedRequest, fetchAccount, fetchAccountUsingJwtPayload } from '../util/session'
+import { checkGlobalRateLimit } from './rate-limits'
 import { ResolverContext } from './resolver-context'
 import Schema from './schema'
 import { GraphErrorResponse } from './types'
@@ -18,11 +19,11 @@ export const apolloServer = new ApolloServer({
   context: getGraphQLContext,
 })
 
-async function getGraphQLContext(context: ExpressContext & { account?: IDraftDocument<IAccount> }): Promise<ResolverContext> {
-  let account: IDraftDocument<IAccount> | null = context.account || null
+export async function getGraphQLContext(expressContext: ExpressContext & { account?: IDraftDocument<IAccount> }): Promise<ResolverContext> {
+  let account: IDraftDocument<IAccount> | null = expressContext.account || null
   if (environment.PROD || account == null) {
     try {
-      account = await getAccountFromExpressContext(context)
+      account = await getAccountFromExpressContext(expressContext)
     } catch (err: unknown) {
       // Only execution errors are caught here. Authentication errors simply result in `account === null`
       if (!environment.PROD) console.error('GraphQL Authentication broke!', err)
@@ -30,7 +31,9 @@ async function getGraphQLContext(context: ExpressContext & { account?: IDraftDoc
     }
     if (!account) throw new AuthenticationError('You must be logged in to use the GraphQL endpoint')
   }
-  return { ...context, account: (account as IAccount) }
+  const resolverContext: ResolverContext = { ...expressContext, account: (account as IAccount) }
+  await checkGlobalRateLimit(resolverContext)
+  return resolverContext
 }
 
 async function getAccountFromExpressContext({ connection, req, res }: ExpressContext): Promise<IAccount | null> {
