@@ -7,10 +7,10 @@ import { ensureMongoDBDisconnected } from '../teardown'
 /* ==================== */
 
 let account: IAccount
-let server: ApolloServer
+let _server: ApolloServer
 beforeAll(async () => {
   account = await prepareMongoDB()
-  server = prepareApolloServer()
+  _server = prepareApolloServer()
 })
 beforeEach(async () => await clearAllGames(account))
 afterAll(ensureMongoDBDisconnected)

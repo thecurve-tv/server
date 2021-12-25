@@ -18,7 +18,7 @@ const chatPlayerSchema = new Schema(
     },
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IChatPlayer extends IDefaultProperties {

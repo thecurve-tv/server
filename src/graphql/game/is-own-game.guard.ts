@@ -19,7 +19,7 @@ export default class IsOwnGameGuard extends Guard<ResolverContext, FindByIdArgs,
 export async function isOwnGame<TArgs, TReturn>(game: IGame, accountId: IAccount['_id']): Promise<void | GuardOutput<TArgs, TReturn>> {
   const isGameHost = accountId.equals(<ObjectId>game.hostAccount)
   if (isGameHost) return
-  // this player check is enough even if the requester is the host but the above check prevents requesting any data
+  // this player check is enough even if the requester is the host but the above check prevents requesting unknown data
   const player = await Player.findOne({ game: game._id, account: accountId }, { _id: 1 })
   if (!player) return { data: false }
 }

@@ -12,7 +12,7 @@ const alertSchema = new Schema(
     },
     ...defaultProperties,
   },
-  defaultOptions
+  defaultOptions,
 )
 
 export interface IAlert extends IDefaultProperties {

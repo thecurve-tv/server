@@ -39,8 +39,8 @@ if (!environment.PROD) {
 app.use('*', (_req, res) => {
   res.sendStatus(404)
 })
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err.stack)
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error((<Error>err).stack)
   res.status(500).send('Something broke!')
 })
 

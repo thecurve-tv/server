@@ -9,9 +9,9 @@ export const environment = {
   AUTH0_USER: {
     id: <string>process.env.AUTH0_USER_ID,
     email: <string>process.env.AUTH0_USER_EMAIL,
-    password: <string>process.env.AUTH0_USER_PASSWORD
+    password: <string>process.env.AUTH0_USER_PASSWORD,
   },
   TEST_SERVER_DOMAIN: `http://localhost:${process.env.PORT}`,
   // Services
-  MONGODB_CONNECT_URI: <string>process.env.MONGODB_CONNECT_URI
+  MONGODB_CONNECT_URI: <string>process.env.MONGODB_CONNECT_URI,
 }

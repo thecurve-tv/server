@@ -9,7 +9,7 @@ const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 export interface GameStopMutationResolverArgs {
   _id: ObjectId
 }
-export default schemaComposer.createResolver<any, GameStopMutationResolverArgs>({
+export default schemaComposer.createResolver<unknown, GameStopMutationResolverArgs>({
   name: 'GameStopMutationResolver',
   type: GameTC,
   args: {
@@ -18,7 +18,7 @@ export default schemaComposer.createResolver<any, GameStopMutationResolverArgs>(
   resolve: resolveGameStopMutation,
 })
 
-async function resolveGameStopMutation({ args }: ResolverResolveParams<any, ResolverContext, GameStopMutationResolverArgs>): Promise<IGame> {
+async function resolveGameStopMutation({ args }: ResolverResolveParams<unknown, ResolverContext, GameStopMutationResolverArgs>): Promise<IGame> {
   const now = Date.now()
   let game = await Game.findById(args._id)
   if (!game) throw new GraphErrorResponse(400, 'There is no game with that id')

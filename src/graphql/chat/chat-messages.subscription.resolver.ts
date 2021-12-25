@@ -14,7 +14,7 @@ import { GraphErrorResponse } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 
-export interface ChatMessage {
+export type ChatMessage = {
   chatId: MongoID
   fromPlayerId: MongoID
   sentTime: number
@@ -46,7 +46,7 @@ const resolveChatMessagesSubscription: GraphQLFieldResolver<unknown, ResolverCon
   _source,
   args,
   context,
-  _info
+  _info,
 ) => {
   /**
    * Validate:
@@ -57,7 +57,7 @@ const resolveChatMessagesSubscription: GraphQLFieldResolver<unknown, ResolverCon
    * - $start unique subscription (deleting existing)
    */
   const now = Date.now()
-  const [chat, playerId] = await validateChatMessagesSubscription(args, context.account._id, now)
+  const [ chat, playerId ] = await validateChatMessagesSubscription(args, context.account._id, now)
   const chatId = chat._id.toHexString()
   const subscriptionId = `chat-messages%chatId~${chatId}%toPlayer~${playerId.toHexString()}`
   return pubsub.asyncIteratorWithOptions(subscriptionId, {
@@ -71,7 +71,7 @@ const resolveChatMessagesSubscription: GraphQLFieldResolver<unknown, ResolverCon
 async function validateChatMessagesSubscription(
   args: ChatMessagesSubscriptionResolverArgs,
   accountId: IAccount['_id'],
-  now: number
+  now: number,
 ): Promise<[IChat, IPlayer['_id']]> {
   const chat = await Chat.findById(args.chatId, { game: 1 })
   if (!chat) {
@@ -83,7 +83,7 @@ async function validateChatMessagesSubscription(
   if (requesterIsHost) {
     const player = await Player.findOne({ game: game._id, account: accountId }, { _id: 1 })
     if (!player) throw new GraphErrorResponse(500, 'We failed to get your player id based on your account id')
-    return [chat, player._id]
+    return [ chat, player._id ]
   }
   const aggregationResult: { player: { _id: IPlayer['_id'] } }[] = await ChatPlayer.aggregate([
     { $match: { chat: chat._id } },
@@ -102,7 +102,7 @@ async function validateChatMessagesSubscription(
   if (aggregationResult.length == 0) {
     throw new GraphErrorResponse(403, 'You must be a player in that chat to listen to its messages')
   }
-  return [chat, aggregationResult[0].player._id]
+  return [ chat, aggregationResult[0].player._id ]
 }
 
 export default <ObjectTypeComposerFieldConfigDefinition<unknown, ResolverContext, ChatMessagesSubscriptionResolverArgs>>{

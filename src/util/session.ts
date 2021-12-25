@@ -11,7 +11,7 @@ export interface AuthenticatedRequest extends Request {
 /**
  * Must be used after authenticating a request
  */
-export function fetchAccount(verifyExists = false, projection: any = { _log: 0 }): RequestHandler {
+export function fetchAccount(verifyExists = false, projection: Record<string, number> = { _log: 0 }): RequestHandler {
   return (req: AuthenticatedRequest, res, next) => {
     const onFail = () => errorResponse(404, 'Failed to get an account with that access token', res)
     let accountQuery
@@ -31,14 +31,14 @@ export function fetchAccount(verifyExists = false, projection: any = { _log: 0 }
   }
 }
 
-export async function fetchAccountUsingJwtPayload(payload: JwtRequestUser, projection: any = { _log: 0 }): Promise<IAccount | null> {
+export async function fetchAccountUsingJwtPayload(payload: JwtRequestUser, projection: Record<string, number> = { _log: 0 }): Promise<IAccount | null> {
   return await Account.findOne({ auth0Id: payload?.sub }, projection)
 }
 
 /**
  * Returns a unified error reponse structure for http(s) requests
  */
-export function errorResponse(statusCode: number, description: string, res?: Response, data?: any) {
+export function errorResponse(statusCode: number, description: string, res?: Response, data?: unknown) {
   const json = {
     status: statusCode,
     message: description,
@@ -52,7 +52,7 @@ export function errorResponse(statusCode: number, description: string, res?: Res
 /**
  * Returns a unified error object structure for internal handlers
  */
-export function errorInternal(description: string, res?: Response, data?: any) {
+export function errorInternal(description: string, res?: Response, data?: unknown) {
   const json = {
     message: description,
     data: data,

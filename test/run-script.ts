@@ -2,7 +2,7 @@ import { ChildProcess, exec } from 'child_process'
 import { Writable } from 'stream'
 
 class WritableTextStream extends Writable {
-  public text: string = ''
+  public text = ''
 
   constructor() {
     super()
@@ -18,9 +18,9 @@ class WritableTextStream extends Writable {
 
 
 class RunResult {
-  public returnCode: number = NaN
+  public returnCode = NaN
   public signal: string | null = null
-  public completed: boolean = false
+  public completed = false
   _stdout: WritableTextStream = new WritableTextStream()
   _stderr: WritableTextStream = new WritableTextStream()
 
@@ -35,7 +35,7 @@ class RunResult {
 
 async function awaitProcess(process: ChildProcess): Promise<[code: number | null, signal: string | null]> {
   return new Promise((resolve, reject) => {
-    process.once('exit', (code, signal) => resolve([code, signal]))
+    process.once('exit', (code, signal) => resolve([ code, signal ]))
     process.once('error', err => reject(err))
   })
 }
@@ -45,7 +45,7 @@ export async function run(cmd: string) {
   const process = exec(cmd)
   process.stdout?.pipe(result._stdout)
   process.stderr?.pipe(result._stderr)
-  const [returnCode, signal] = await awaitProcess(process)
+  const [ returnCode, signal ] = await awaitProcess(process)
   result.returnCode = returnCode == null ? NaN : returnCode // ChildProcess can supply null return codes
   result.signal = signal
   result.completed = true

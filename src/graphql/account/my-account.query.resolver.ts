@@ -5,8 +5,7 @@ import { AccountTC } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 
-export interface MyAccountQueryResolverArgs {}
-export default schemaComposer.createResolver<any, MyAccountQueryResolverArgs>({
+export default schemaComposer.createResolver<unknown, Record<string, unknown>>({
   name: 'MyAccountQueryResolver',
   type: AccountTC.getType(),
   args: {},

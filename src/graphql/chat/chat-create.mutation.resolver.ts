@@ -24,13 +24,13 @@ export interface ChatCreateMutationResolverResult {
   chatPlayers: IChatPlayer[]
 }
 
-export default schemaComposer.createResolver<any, ChatCreateMutationResolverArgs>({
+export default schemaComposer.createResolver<unknown, ChatCreateMutationResolverArgs>({
   name: 'ChatCreateMutationResolver',
   type: schemaComposer.createObjectTC({
     name: 'ChatCreateMutationResolverResult',
     fields: {
       chat: ChatTC,
-      chatPlayers: [ChatPlayerTC],
+      chatPlayers: [ ChatPlayerTC ],
     },
   }),
   args: {
@@ -44,7 +44,7 @@ export default schemaComposer.createResolver<any, ChatCreateMutationResolverArgs
 async function resolveChatCreateMutation({
   args,
   context,
-}: ResolverResolveParams<any, ResolverContext, ChatCreateMutationResolverArgs>): Promise<ChatCreateMutationResolverResult> {
+}: ResolverResolveParams<unknown, ResolverContext, ChatCreateMutationResolverArgs>): Promise<ChatCreateMutationResolverResult> {
   /**
    * Validate args
    * $- game must be active
@@ -80,7 +80,7 @@ async function resolveChatCreateMutation({
   await (
     await startSession()
   ).withTransaction(async session => {
-    await Promise.all([Chat.create([chatDoc], { session }), ChatPlayer.create(chatPlayerDocs, { session })]).then(([[chat], chatPlayers]) => {
+    await Promise.all([ Chat.create([ chatDoc ], { session }), ChatPlayer.create(chatPlayerDocs, { session }) ]).then(([ [ chat ], chatPlayers ]) => {
       result = {
         chat,
         chatPlayers,

@@ -23,7 +23,7 @@ export interface GameJoinMutationResolverResult {
   player: IPlayer
 }
 
-export default schemaComposer.createResolver<any, GameJoinMutationResolverArgs>({
+export default schemaComposer.createResolver<unknown, GameJoinMutationResolverArgs>({
   name: 'GameJoinMutationResolver',
   type: schemaComposer.createObjectTC({
     name: 'GameJoinMutationResolverResult',
@@ -42,7 +42,7 @@ export default schemaComposer.createResolver<any, GameJoinMutationResolverArgs>(
 async function resolveGameJoinMutation({
   args,
   context,
-}: ResolverResolveParams<any, ResolverContext, GameJoinMutationResolverArgs>): Promise<GameJoinMutationResolverResult> {
+}: ResolverResolveParams<unknown, ResolverContext, GameJoinMutationResolverArgs>): Promise<GameJoinMutationResolverResult> {
   /**
    * Validate:
    * $- game must be active
@@ -78,13 +78,17 @@ async function resolveGameJoinMutation({
   let result: GameJoinMutationResolverResult | unknown
   const session = await startSession()
   await session.withTransaction(async session => {
-    await Promise.all([Player.create([playerDoc], { session }), ChatPlayer.create([chatPlayerDoc], { session }), Room.create([roomDoc], { session })]).then(
-      ([[player], _chatPlayers, _rooms]) => {
+    await Promise.all([
+      Player.create([ playerDoc ], { session }),
+      ChatPlayer.create([ chatPlayerDoc ], { session }),
+      Room.create([ roomDoc ], { session }),
+    ]).then(
+      ([ [ player ], _chatPlayers, _rooms ]) => {
         result = {
           game: activeGame,
           player,
         }
-      }
+      },
     )
   })
   return <GameJoinMutationResolverResult>result
@@ -112,14 +116,14 @@ export async function getActiveGame(
   _id: IGame['_id'],
   now: number,
   throwIfActiveGameNotFound: boolean,
-  projection?: { [k: string]: number }
+  projection?: { [k: string]: number },
 ): Promise<IGame | null> {
   const game = await Game.findOne(
     {
       _id,
       $and: [{ endTime: { $gt: now } }, { pausedTime: { $eq: undefined } }],
     },
-    projection
+    projection,
   )
   if (throwIfActiveGameNotFound && !game) {
     throw new GraphErrorResponse(400, 'There is no ongoing game with that id. It is possible the game has ended or is paused.')

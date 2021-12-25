@@ -114,7 +114,7 @@ export interface SubscriptionFilter<TPayload> {
  * * `itemName`: the actual name of the item (e.g. projects/{projectId}/topics/chat-messages)
  * * `subscriptionNumber`: [internal] tracking number that should never be used outside of the instance where it was obtained
  */
-export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubSubEngine {
+export class GooglePubSub<TPayload extends Record<string, unknown>> implements PubSubEngine {
   private readonly client = new PubSub()
   private readonly subscriptions = new SubscriptionTracker()
   private readonly topicName: string
@@ -145,7 +145,7 @@ export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubS
   async subscribe(
     subscriptionId: string,
     onMessageOrClose: (done: boolean, message?: Message) => Promise<void>,
-    options: GooglePubSubSubscribeOptions<TPayload>
+    options: GooglePubSubSubscribeOptions<TPayload>,
   ): Promise<number> {
     const subscriptionName = this.getSubscriptionName(subscriptionId)
     const subscription = await this.getSubscription(subscriptionName, options)
@@ -210,7 +210,7 @@ export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubS
       attributes = options.attributes
     } else {
       attributes = {}
-      Object.entries(options.payload).forEach(([key, value]) => (attributes[key] = `${value}`))
+      Object.entries(options.payload).forEach(([ key, value ]) => (attributes[key] = `${value}`))
     }
     await topic.publishMessage({
       json: {
@@ -238,7 +238,7 @@ export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubS
     if (savedSubscription) return savedSubscription
     const topic = this.client.topic(this.topicName)
     const subscription = topic.subscription(subscriptionName)
-    const [exists] = await subscription.exists()
+    const [ exists ] = await subscription.exists()
     if (exists) {
       if (!options.deleteExistingSubscription) {
         throw new Error(`A subscription already exists with the name ${subscriptionName}`)
@@ -249,7 +249,7 @@ export class GooglePubSub<TPayload extends { [k: string]: any }> implements PubS
   }
 
   private async createSubscription(subscriptionName: string, options: GooglePubSubSubscribeOptions<TPayload>): Promise<Subscription> {
-    const [subscription] = await this.client.createSubscription(this.topicName, subscriptionName, {
+    const [ subscription ] = await this.client.createSubscription(this.topicName, subscriptionName, {
       labels: options.labels,
       enableMessageOrdering: !!this.config.orderingKey,
       expirationPolicy: { ttl: { seconds: options.messageExpirationSeconds || 24 * 60 * 60 } },

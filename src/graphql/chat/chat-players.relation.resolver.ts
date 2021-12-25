@@ -10,9 +10,9 @@ const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 export interface ChatPlayersRelationResolverArgs {
   chatId: ObjectId
 }
-export default schemaComposer.createResolver<any, ChatPlayersRelationResolverArgs>({
+export default schemaComposer.createResolver<unknown, ChatPlayersRelationResolverArgs>({
   name: 'ChatPlayersRelationResolver',
-  type: [PlayerTC.getType()],
+  type: [ PlayerTC.getType() ],
   args: {
     chatId: 'MongoID!',
   },

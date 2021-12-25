@@ -22,7 +22,7 @@ export interface GameGetInviteQueryResolverResult {
   gameStatus: 'OPEN' | 'FULL' | 'CLOSED'
 }
 type GameInvite = IGame & { hostAccount: IAccount; players: IPlayer[] }
-export default schemaComposer.createResolver<any, GameGetInviteQueryResolverArgs>({
+export default schemaComposer.createResolver<unknown, GameGetInviteQueryResolverArgs>({
   name: 'GameGetInviteQueryResolver',
   type: schemaComposer.createObjectTC({
     name: 'GameGetInviteQueryResolverResult',
@@ -53,7 +53,7 @@ export default schemaComposer.createResolver<any, GameGetInviteQueryResolverArgs
   },
   resolve: async ({ args }) => {
     const now = Date.now()
-    const [game]: GameInvite[] = await Game.aggregate([
+    const [ game ]: GameInvite[] = await Game.aggregate([
       {
         $match: { _id: new ObjectId(args.gameId) },
       },

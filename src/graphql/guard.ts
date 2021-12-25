@@ -13,7 +13,7 @@ export interface GuardOutput<TArgs, TReturn> {
   data?: TReturn | false // set to false to remove all data
 }
 
-export abstract class Guard<TContext, TArgs = any, TReturn = any> {
+export abstract class Guard<TContext, TArgs = unknown, TReturn = unknown> {
   constructor(public type: GuardType) {}
 
   abstract check(input: GuardInput<TContext, TArgs, TReturn>): Promise<GuardOutput<TArgs, TReturn> | void>
