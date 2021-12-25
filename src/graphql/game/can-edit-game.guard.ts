@@ -12,7 +12,7 @@ export default class CanEditGameGuard extends Guard<ResolverContext, UpdateByIdA
   }
   async check({ context, args }: GuardInput<ResolverContext, UpdateByIdArgs, IGame>): Promise<void | GuardOutput<UpdateByIdArgs, IGame>> {
     const now = Date.now()
-    const game = await getActiveGame(args._id, now, true)
+    const game = await getActiveGame(new ObjectId(args._id), now, true)
     if (!(<ObjectId>game.hostAccount).equals(context.account._id)) throw new GraphErrorResponse(403, 'You must be the game host to do that.')
     if (!game.pausedTime && game.endTime <= now) throw new GraphErrorResponse(403, 'You cannot edit the game after it has ended')
   }

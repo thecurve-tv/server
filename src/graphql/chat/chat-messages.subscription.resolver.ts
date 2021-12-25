@@ -14,7 +14,7 @@ import { GraphErrorResponse } from '../types'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 
-export interface ChatMessage {
+export type ChatMessage = {
   chatId: MongoID
   fromPlayerId: MongoID
   sentTime: number

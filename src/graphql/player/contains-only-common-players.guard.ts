@@ -4,11 +4,14 @@ import { ResolverContext } from '../resolver-context'
 import { Guard, GuardInput, GuardOutput } from '../guard'
 import { FindManyArgs } from '../mongoose-resolvers'
 
-export default class ContainsOnlyCommonPlayersGuard extends Guard<ResolverContext, FindManyArgs, unknown> {
+// graphql-compose-mongoose has foo-bar'd types. resolvers that return `data[]` are typed as returning `data`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default class ContainsOnlyCommonPlayersGuard extends Guard<ResolverContext, FindManyArgs, any> {
   constructor() {
     super('egress')
   }
-  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, unknown>): Promise<void | GuardOutput<FindManyArgs, unknown>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, any>): Promise<void | GuardOutput<FindManyArgs, unknown>> {
     const players: IPlayer[] = data
     // the game field might not have been requested, so fetch it
     const playersGameIdsDoc = await Player.find({ _id: { $in: players.map(p => p._id) } }, { game: 1 })

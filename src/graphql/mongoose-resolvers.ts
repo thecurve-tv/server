@@ -1,7 +1,7 @@
 export type MongoID = string
 
 export interface FindByIdArgs {
-  _id: unknown
+  _id: MongoID
 }
 
 export interface FindManyArgs {
@@ -12,6 +12,6 @@ export interface FindManyArgs {
 }
 
 export interface UpdateByIdArgs {
-  _id: unknown
+  _id: MongoID
   record: unknown
 }

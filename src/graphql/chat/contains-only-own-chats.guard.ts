@@ -7,11 +7,14 @@ import { FindManyArgs } from '../mongoose-resolvers'
 import { ObjectId } from 'bson'
 import { Game } from '../../models/game'
 
-export default class ContainsOnlyOwnChatsGuard extends Guard<ResolverContext, FindManyArgs, unknown> {
+// graphql-compose-mongoose has foo-bar'd types. resolvers that return `data[]` are typed as returning `data`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default class ContainsOnlyOwnChatsGuard extends Guard<ResolverContext, FindManyArgs, any> {
   constructor() {
     super('egress')
   }
-  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, unknown>): Promise<void | GuardOutput<FindManyArgs, unknown>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, any>): Promise<void | GuardOutput<FindManyArgs, unknown>> {
     const chats: IChat[] = data
     if (!chats || chats.length == 0) return
     const uniqueChatIdStrs = new Set(chats.map(chat => chat._id.toHexString()))

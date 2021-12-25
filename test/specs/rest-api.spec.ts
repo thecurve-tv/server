@@ -9,7 +9,7 @@ afterAll(ensureMongoDBDisconnected)
 
 describe('REST/accounts', () => {
   it('POST ./', async () => {
-    await Account.deleteMany({ auth0Id: environment.AUTH0_USER.id })
+    await Account.deleteMany({ email: environment.AUTH0_USER.email })
     const reqData = {
       auth0Id: environment.AUTH0_USER.id,
       email: environment.AUTH0_USER.email,

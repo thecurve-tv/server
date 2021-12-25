@@ -114,7 +114,7 @@ export interface SubscriptionFilter<TPayload> {
  * * `itemName`: the actual name of the item (e.g. projects/{projectId}/topics/chat-messages)
  * * `subscriptionNumber`: [internal] tracking number that should never be used outside of the instance where it was obtained
  */
-export class GooglePubSub<TPayload extends { [k: string]: unknown }> implements PubSubEngine {
+export class GooglePubSub<TPayload extends Record<string, unknown>> implements PubSubEngine {
   private readonly client = new PubSub()
   private readonly subscriptions = new SubscriptionTracker()
   private readonly topicName: string

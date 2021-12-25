@@ -50,7 +50,7 @@ describe('GraphQL::ingress guard', () => {
     try {
       await guarded.resolve({ args: { text: initialInput } })
     } catch (err) {
-      error = err.message
+      error = (err as Error).message
     }
     expect(error).toEqual('blocked')
   })

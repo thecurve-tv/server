@@ -76,11 +76,13 @@ export class GooglePubSubAsyncIterator<TPayload> implements AsyncIterator<TPaylo
   constructor(
     /**
      * another case of dumb method signatures in {@link PubsubEngine.asyncIterator} where the inferred type `T` is required.
-     * so we use `unknown` to circumvent this restriction
+     * so we use `any` to circumvent this restriction
      */
-    private engine: GooglePubSub<unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private engine: GooglePubSub<any>,
     private subscriptionId: string,
-    options: GooglePubSubSubscribeOptions<unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    options: GooglePubSubSubscribeOptions<any>,
   ) {
     this.isRunning = true
     this.subscriptionNumber$ = of(undefined).pipe(
