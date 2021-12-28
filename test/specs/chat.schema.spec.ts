@@ -12,7 +12,7 @@ beforeAll(async () => {
   account = await prepareMongoDB()
   _server = prepareApolloServer()
 })
-beforeEach(async () => await clearAllGames(account))
+beforeEach(async () => await clearAllGames(account), 10000)
 afterAll(ensureMongoDBDisconnected)
 
 /* ==================== */
