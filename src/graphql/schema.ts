@@ -6,6 +6,7 @@ import { gameMutations, gameQueries } from './game/game.schema'
 import { ResolverContext } from './resolver-context'
 import { photoQueries } from './photo/photo.schema'
 import { playerMutations, playerQueries } from './player/player.schema'
+import { rankingMutations, rankingQueries } from './ranking/ranking.schema'
 
 const schemaComposer: SchemaComposer<ResolverContext> = _schemaComposer
 
@@ -16,12 +17,14 @@ schemaComposer.Query.addFields({
   ...gameQueries,
   ...playerQueries,
   ...photoQueries,
+  ...rankingQueries,
 })
 
 schemaComposer.Mutation.addFields({
   ...chatMutations,
   ...gameMutations,
   ...playerMutations,
+  ...rankingMutations,
 })
 
 schemaComposer.Subscription.addFields({

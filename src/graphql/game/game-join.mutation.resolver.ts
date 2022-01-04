@@ -111,12 +111,21 @@ async function validateGameJoinMutation(args: GameJoinMutationResolverArgs, acco
  * @returns 'null' if no active game was found
  * @throws 'GraphErrorResponse' if `throwIfActiveGameNotFound == true` & no active game was found
  */
-export async function getActiveGame(_id: IGame['_id'], now: number, throwIfActiveGameNotFound: true, projection?: { [k: string]: number }): Promise<IGame>
+export async function getActiveGame(
+  _id: IGame['_id'], now: number,
+  throwIfActiveGameNotFound: true,
+  projection?: { [k in keyof IDraftDocument<IGame>]?: number }): Promise<IGame>
+export async function getActiveGame(
+  _id: IGame['_id'],
+  now: number,
+  throwIfActiveGameNotFound: false,
+  projection?: { [k in keyof IDraftDocument<IGame>]?: number }
+): Promise<IGame | null>
 export async function getActiveGame(
   _id: IGame['_id'],
   now: number,
   throwIfActiveGameNotFound: boolean,
-  projection?: { [k: string]: number },
+  projection?: { [k in keyof IDraftDocument<IGame>]?: number },
 ): Promise<IGame | null> {
   const game = await Game.findOne(
     {

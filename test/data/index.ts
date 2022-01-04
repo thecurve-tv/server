@@ -27,6 +27,23 @@ export function getValidStartGameQuery(hostPlayer: typeof mockPlayers[0] = mockP
     ) {
       game {
         _id
+        startTime
+      }
+    }
+  }`
+}
+export function getValidJoinGameQuery(gameId: string, player: typeof mockPlayers[0]) {
+  return `mutation {
+    gameJoin(
+      _id: "${gameId}"
+      playerName: "${player.name}"
+    ) {
+      game {
+        startTime
+        endTime
+      }
+      player {
+        _id
       }
     }
   }`
@@ -64,4 +81,28 @@ export async function expectOperationToFail(
   expect(res.errors).toHaveLength(1)
   expect(res.errors && res.errors[0].message).toContain(expectedError)
   return res
+}
+
+export async function forceEndGame(server: ApolloServer, gameId: string, startTime: number, account: typeof mockPlayers[0]['account']) {
+  const endTime = startTime + 1
+  const res = await expectOperationToSucceed(
+    server,
+    {
+      query: `mutation {
+        gameUpdateById(
+          _id: "${gameId}"
+          record: {
+            endTime: ${endTime}
+          }
+        ) {
+          record {
+            endTime
+          }
+        }
+      }`,
+    },
+    { account, req: {}, res: {} },
+  )
+  expect(res.data?.gameUpdateById?.record?.endTime).toEqual(endTime)
+  await new Promise(resolve => setTimeout(resolve, Math.max(0, endTime - Date.now()))) // wait for endTime
 }

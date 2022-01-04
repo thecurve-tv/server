@@ -36,7 +36,7 @@
       2
     ],
     "linebreak-style": [
-      "error",
+      "off",
       "unix"
     ],
     "max-len": [
