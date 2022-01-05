@@ -91,7 +91,7 @@ export class ContainsOnlyVisibleRankingsGuard extends Guard<ResolverContext, Fin
   ): Promise<void | GuardOutput<FindManyArgs, any>> {
     const rankings = data as IRanking[]
     if (!rankings || rankings.length == 0) return
-    const result: IRanking[] = await Ranking.aggregate([
+    const aggregationResult: IRanking[] = await Ranking.aggregate([
       { $match: { _id: { $in: rankings.map(r => r._id) } } },
       {
         $lookup: {
@@ -110,8 +110,33 @@ export class ContainsOnlyVisibleRankingsGuard extends Guard<ResolverContext, Fin
         },
       },
     ])
-    return {
-      data: rankings.filter(ranking => result.some(r => r._id.equals(ranking._id))),
+    const mutatedData: IRanking[] = []
+    for (const ranking of rankings) {
+      const rankingIsCompletelyVisible = aggregationResult.some(r => r._id.equals(ranking._id))
+      if (!rankingIsCompletelyVisible) {
+        // partially-visible = can only see own ratings
+        // (Query: rankingsMany) can show rankings from various games, so cannot do a bulk search for the player associated with the requester
+        let gameId
+        if (ranking.game) {
+          gameId = (ranking.game as ObjectId).toHexString()
+        } else {
+          const fatRanking = await Ranking.findById(ranking._id, { game: 1 })
+          if (fatRanking) gameId = (fatRanking.game as ObjectId).toHexString()
+        }
+        const player = await Player.findOne({ game: gameId, account: context.account._id }, { _id: 1 })
+        if (!player?._id) {
+          // skip this ranking because we cannot identify whose ratings are whose
+          // NOTE: this will happen if a Query neither populates the Ranking.game field nor the Ranking._id field
+          continue
+        }
+        const playerId = player._id.toHexString()
+        const mutatedRatings: IRanking['ratings'] = new Map()
+        const ownRatings = ranking.ratings.get(playerId)
+        if (ownRatings) mutatedRatings.set(playerId, ownRatings)
+        ranking.ratings = mutatedRatings
+      }
+      mutatedData.push(ranking)
     }
+    return { data: mutatedData }
   }
 }

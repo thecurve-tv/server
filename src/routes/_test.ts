@@ -6,6 +6,7 @@ import { ChatPlayer } from '../models/chatPlayer'
 import { Game } from '../models/game'
 import { Photo } from '../models/photo'
 import { Player } from '../models/player'
+import { Ranking } from '../models/ranking'
 import { Room } from '../models/room'
 import { AuthenticatedRequest, fetchAccount } from '../util/session'
 
@@ -27,6 +28,7 @@ export async function clearGames(accountId: string) {
   const session = await startSession()
   await session.withTransaction(async () => {
     await Promise.all([
+      Ranking.deleteMany({ game: { $in: gameIds } }, { session }),
       Room.deleteMany({ player: { $in: playerIds } }, { session }),
       Photo.deleteMany({ player: { $in: playerIds } }, { session }),
       ChatPlayer.deleteMany({

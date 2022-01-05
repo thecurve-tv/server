@@ -1,5 +1,6 @@
 import { ApolloServer } from 'apollo-server-express'
 import { IAccount } from '../../src/models/account'
+import { IPlayer, Player } from '../../src/models/player'
 import { IRanking, Ranking } from '../../src/models/ranking'
 import {
   clearAllGames,
@@ -84,6 +85,7 @@ describe('query/rankingById', () => {
 })
 
 describe('query/rankingMany', () => {
+  let gameId: string
   let ranking: IRanking
   let rankingManyQuery: string
   beforeEach(async () => {
@@ -93,7 +95,7 @@ describe('query/rankingMany', () => {
       { query: getValidStartGameQuery(mockPlayers[0]) },
       { account: mockPlayers[1].account, req: {}, res: {} },
     )
-    const gameId = res.data?.gameStart?.game?._id
+    gameId = res.data?.gameStart?.game?._id
     res = await expectOperationToSucceed(
       server,
       { query: getValidStartRankingQuery(gameId) },
@@ -107,6 +109,7 @@ describe('query/rankingMany', () => {
         }
       ) {
         _id
+        ratings
       }
     }`
   })
@@ -128,8 +131,20 @@ describe('query/rankingMany', () => {
     expect(res.data?.rankingMany).toHaveLength(1)
   })
   it('redacts if not game host and ranking open', async () => {
+    await expectOperationToSucceed(server, { query: getValidJoinGameQuery(gameId, mockPlayers[0]) })
+    const player = <IPlayer>await Player.findOne({ game: gameId, account: mockPlayers[0].account._id }, { _id: 1 })
+    const playerId = player._id.toHexString()
+    const fatRanking = <IRanking>await Ranking.findById(ranking._id)
+    expect(fatRanking).toBeTruthy()
+    // this rating should be visible
+    fatRanking.ratings.set(playerId, new Map([ [ 'some other player', 1 ] ]))
+    // this rating should NOT be visible
+    fatRanking.ratings.set('someone other player id', new Map([ [ playerId, 1 ] ]))
+    await fatRanking.save()
     const res = await expectOperationToSucceed(server, { query: rankingManyQuery })
-    expect(res.data?.rankingMany).toHaveLength(0)
+    expect(res.data?.rankingMany).toHaveLength(1)
+    const ratings = res.data?.rankingMany[0].ratings as IRanking['ratings']
+    expect([ ...ratings.keys() ]).toMatchObject([ playerId ]) // only have my own rating
   })
 })
 
