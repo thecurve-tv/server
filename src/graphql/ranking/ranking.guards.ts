@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ObjectId } from 'bson'
-import { IGame } from '../../models/game'
+import { Game, IGame } from '../../models/game'
 import { Player } from '../../models/player'
 import { IRanking, Ranking } from '../../models/ranking'
 import { getActiveGame } from '../game/game-join.mutation.resolver'
 import { Guard, GuardInput, GuardOutput } from '../guard'
-import { FindByIdArgs } from '../mongoose-resolvers'
+import { FindByIdArgs, FindManyArgs } from '../mongoose-resolvers'
 import { ResolverContext } from '../resolver-context'
 import { GraphErrorResponse } from '../types'
 import { RankingPutRatingsMutationResolverArgs } from './ranking-put-ratings.mutation.resolver'
@@ -15,8 +15,9 @@ export class CanStartRankingGuard extends Guard<ResolverContext, any, IRanking> 
     super('ingress')
   }
   async check(
-    { context, args }: GuardInput<ResolverContext, any, IRanking>,
+    { context, args: _args }: GuardInput<ResolverContext, any, IRanking>,
   ): Promise<void | GuardOutput<any, IRanking>> {
+    const args = _args as {game: ObjectId}
     const now = Date.now()
     const game = await getActiveGame(args.game, now, true, { hostAccount: 1 })
     if (!context.account._id.equals(game.hostAccount as ObjectId)) {
@@ -70,6 +71,40 @@ export class CanEditRankingGuard extends Guard<ResolverContext, RankingPutRating
     }
     if (game.endTime <= now) {
       throw new GraphErrorResponse(403, 'You cannot submit ratings after the game has ended')
+    }
+  }
+}
+
+export class ContainsOnlyVisibleRankingsGuard extends Guard<ResolverContext, FindManyArgs, any> {
+  constructor() {
+    super('egress')
+  }
+  async check(
+    { context, data }: GuardInput<ResolverContext, FindManyArgs, any>,
+  ): Promise<void | GuardOutput<FindManyArgs, any>> {
+    const rankings = data as IRanking[]
+    if (!rankings || rankings.length == 0) return
+    const result: IRanking[] = await Ranking.aggregate([
+      { $match: { _id: { $in: rankings.map(r => r._id) } } },
+      {
+        $lookup: {
+          from: Game.collection.name,
+          localField: 'game',
+          foreignField: '_id',
+          as: 'game',
+        },
+      },
+      {
+        $match: {
+          $or: [
+            { 'game.hostAccount': context.account._id }, // if host then you can see all rankings
+            { completedTime: { $exists: true } }, // else can only see closed rankings
+          ],
+        },
+      },
+    ])
+    return {
+      data: rankings.filter(ranking => result.some(r => r._id.equals(ranking._id))),
     }
   }
 }

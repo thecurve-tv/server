@@ -1,6 +1,6 @@
 import { ApolloServer } from 'apollo-server-express'
 import { IAccount } from '../../src/models/account'
-import { Ranking } from '../../src/models/ranking'
+import { IRanking, Ranking } from '../../src/models/ranking'
 import {
   clearAllGames,
   expectOperationToFail,
@@ -80,6 +80,56 @@ describe('query/rankingById', () => {
       { account: mockPlayers[1].account, req: {}, res: {} },
     )
     expect(res.data?.rankingById).toBeFalsy()
+  })
+})
+
+describe('query/rankingMany', () => {
+  let ranking: IRanking
+  let rankingManyQuery: string
+  beforeEach(async () => {
+    // start game as p2
+    let res = await expectOperationToSucceed(
+      server,
+      { query: getValidStartGameQuery(mockPlayers[0]) },
+      { account: mockPlayers[1].account, req: {}, res: {} },
+    )
+    const gameId = res.data?.gameStart?.game?._id
+    res = await expectOperationToSucceed(
+      server,
+      { query: getValidStartRankingQuery(gameId) },
+      { account: mockPlayers[1].account, req: {}, res: {} },
+    )
+    ranking = res.data?.rankingStart
+    rankingManyQuery = `{
+      rankingMany(
+        filter: {
+          game: "${gameId}"
+        }
+      ) {
+        _id
+      }
+    }`
+  })
+
+  it('works', async () => {
+    const res = await expectOperationToSucceed(
+      server,
+      { query: rankingManyQuery },
+      { account: mockPlayers[1].account, req: {}, res: {} },
+    )
+    expect(res.data?.rankingMany).toHaveLength(1)
+  })
+  it('works if not game host and ranking closed', async () => {
+    await Ranking.updateOne(
+      { _id: ranking._id },
+      { completedTime: (ranking._log?.createdDate || 0) + 1 },
+    )
+    const res = await expectOperationToSucceed(server, { query: rankingManyQuery })
+    expect(res.data?.rankingMany).toHaveLength(1)
+  })
+  it('redacts if not game host and ranking open', async () => {
+    const res = await expectOperationToSucceed(server, { query: rankingManyQuery })
+    expect(res.data?.rankingMany).toHaveLength(0)
   })
 })
 

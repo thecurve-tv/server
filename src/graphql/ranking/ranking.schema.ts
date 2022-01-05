@@ -3,7 +3,7 @@ import { IRanking } from '../../models/ranking'
 import { ResolverContext } from '../resolver-context'
 import { guardResolver } from '../guard'
 import { RankingTC, GameTC } from '../types'
-import { CanEditRankingGuard, CanStartRankingGuard, CanViewRankingGuard } from './ranking.guards'
+import { CanEditRankingGuard, CanStartRankingGuard, CanViewRankingGuard, ContainsOnlyVisibleRankingsGuard } from './ranking.guards'
 import rankingPutRatingsMutationResolver from './ranking-put-ratings.mutation.resolver'
 import rankingStartMutationResolver from './ranking-start.mutation.resolver'
 
@@ -18,6 +18,7 @@ RankingTC.addRelation('game', {
 
 export const rankingQueries: ObjectTypeComposerFieldConfigMapDefinition<IRanking, ResolverContext> = {
   rankingById: guardResolver(RankingTC.mongooseResolvers.findById(), new CanViewRankingGuard()),
+  rankingMany: guardResolver(RankingTC.mongooseResolvers.findMany(), new ContainsOnlyVisibleRankingsGuard()),
 }
 
 export const rankingMutations: ObjectTypeComposerFieldConfigMapDefinition<IRanking, ResolverContext> = {
