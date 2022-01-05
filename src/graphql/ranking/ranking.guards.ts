@@ -23,6 +23,13 @@ export class CanStartRankingGuard extends Guard<ResolverContext, any, IRanking> 
     if (!context.account._id.equals(game.hostAccount as ObjectId)) {
       throw new GraphErrorResponse(403, 'You must be the game host to do that')
     }
+    const openRanking = await Ranking.findOne({
+      game: game._id,
+      completedTime: { $exists: false },
+    }, { _id: 1 })
+    if (openRanking) {
+      throw new GraphErrorResponse(403, 'You cannot run 2 rankings at the same time')
+    }
   }
 }
 

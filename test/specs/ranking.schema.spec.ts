@@ -309,4 +309,14 @@ describe('mutation/rankingStart', () => {
       { query: getValidStartRankingQuery(res.data?.gameStart?.game?._id) },
     )
   })
+  it('fails if there is another open ranking', async () => {
+    let res = await expectOperationToSucceed(server, { query: getValidStartGameQuery(mockPlayers[0]) })
+    const gameId = res.data?.gameStart?.game?._id
+    res = await expectOperationToSucceed(server, { query: getValidStartRankingQuery(gameId) })
+    await expectOperationToFail(
+      server,
+      'You cannot run 2 rankings at the same time',
+      { query: getValidStartRankingQuery(gameId) },
+    )
+  })
 })
