@@ -38,7 +38,7 @@ async function resolveRankingPutRatingsMutation(
   if (!ranking) {
     throw new GraphErrorResponse(404, 'There is not ranking with that id')
   }
-  const numOtherPlayers = await validateRatings(ranking.game as ObjectId, args.ratings)
+  const numOtherPlayers = await validateRatings(ranking.game as ObjectId, args.ratings, context.account._id)
   const playerDoingRating = await Player.findOne(
     { game: ranking.game, account: context.account._id },
     { _id: 1 },
@@ -59,8 +59,8 @@ async function resolveRankingPutRatingsMutation(
   return true
 }
 
-async function validateRatings(gameId: ObjectId, ratings: RankingPutRatingsMutationResolverArgs['ratings']) {
-  const players = await Player.find({ game: gameId }, { _id: 1 })
+async function validateRatings(gameId: ObjectId, ratings: RankingPutRatingsMutationResolverArgs['ratings'], accountId: ObjectId) {
+  const players = await Player.find({ game: gameId }, { _id: 1, account: 1 })
   const numOtherPlayers = players.length - 2 // minus host, minus self
   if (ratings.length != numOtherPlayers) {
     throw new GraphErrorResponse(400, 'You must rate all other players')
@@ -79,5 +79,9 @@ async function validateRatings(gameId: ObjectId, ratings: RankingPutRatingsMutat
     }
     return cur
   }, 0)
+  const playersBeingRated = players.filter(p => ratings.some(rating => p._id.equals(rating.player)))
+  if (playersBeingRated.some(p => accountId.equals(p.account as ObjectId))) {
+    throw new GraphErrorResponse(400, 'You cannot rate yourself')
+  }
   return numOtherPlayers
 }

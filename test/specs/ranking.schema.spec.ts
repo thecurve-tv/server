@@ -291,6 +291,10 @@ describe('mutation/rankingPutRatings', () => {
       { player: mockPlayers[2].name, position: 1 },
       { player: mockPlayers[3].name, position: 1 },
     ] },
+    { desc: 'You cannot rate yourself', ratings: [
+      { player: mockPlayers[1].name, position: 1 },
+      { player: mockPlayers[2].name, position: 2 },
+    ] },
   ])('invalid ratings', ({ desc, ratings: _ratings }) => {
     it.todo(`fails for ${desc}`)
   })
