@@ -1,6 +1,6 @@
+import { ExpressContext } from 'apollo-server-express'
 import { Request } from 'express'
 import { Guard, GuardInput, GuardOutput } from './guard'
-import { ResolverContext } from './resolver-context'
 import { GraphErrorResponse } from './types'
 
 export const GLOBAL_WINDOW_CONSTRAINS = {
@@ -13,13 +13,19 @@ const globalWindows: Record<Request['ip'], {
   remainingQuota: number,
 }> = {}
 
-export class GlobalRateLimitGuard extends Guard<ResolverContext> {
+export class GlobalRateLimitGuard extends Guard<ExpressContext> {
   constructor() {
     super('ingress')
   }
-  async check({ context }: GuardInput<ResolverContext, unknown, unknown>): Promise<void | GuardOutput<unknown, unknown>> {
+  async check({ context }: GuardInput<ExpressContext, unknown, unknown>): Promise<void | GuardOutput<unknown, unknown>> {
     const now = Date.now()
-    const ip = context.req.ip
+    const ip = context?.req?.ip
+    if (!ip) {
+      throw new GraphErrorResponse(
+        400,
+        'Rate limiting is enforced on this server. Please expose your ip address on your request',
+      )
+    }
     const window = globalWindows[ip]
     if (window) {
       const expired = window.endTime <= now
@@ -41,6 +47,6 @@ export class GlobalRateLimitGuard extends Guard<ResolverContext> {
   }
 }
 
-export async function checkGlobalRateLimit(context: ResolverContext): Promise<void> {
+export async function checkGlobalRateLimit(context: ExpressContext): Promise<void> {
   await new GlobalRateLimitGuard().check({ context, args: {} })
 }
