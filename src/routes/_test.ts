@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson'
 import { Router } from 'express'
 import { startSession } from 'mongoose'
 import { apolloServer } from '../graphql/graphql'
@@ -6,6 +7,7 @@ import { ChatPlayer } from '../models/chatPlayer'
 import { Game } from '../models/game'
 import { Photo } from '../models/photo'
 import { Player } from '../models/player'
+import { Ranking } from '../models/ranking'
 import { Room } from '../models/room'
 import { AuthenticatedRequest, fetchAccount } from '../util/session'
 
@@ -27,6 +29,7 @@ export async function clearGames(accountId: string) {
   const session = await startSession()
   await session.withTransaction(async () => {
     await Promise.all([
+      Ranking.deleteMany({ game: { $in: gameIds } }, { session }),
       Room.deleteMany({ player: { $in: playerIds } }, { session }),
       Photo.deleteMany({ player: { $in: playerIds } }, { session }),
       ChatPlayer.deleteMany({
@@ -50,9 +53,11 @@ router.post('/clearGames', fetchAccount(), (req: AuthenticatedRequest, res, next
 })
 
 router.post('/execGraphql', (req, res, next) => {
+  const account = req.body.account
+  if (account?._id) account._id = new ObjectId(account._id)
   apolloServer.executeOperation(
     req.body.request,
-    { account: req.body.account, req, res },
+    { account, req, res },
   )
     .then(gRes => res.send(gRes))
     .catch(next)

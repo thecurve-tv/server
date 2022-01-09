@@ -1,6 +1,16 @@
 import { ApolloServer } from 'apollo-server-express'
 import { IAccount } from '../../src/models/account'
-import { clearAllGames, expectOperationToFail, expectOperationToSucceed, getValidStartGameQuery, maxGameDuration, minGameDuration, mockPlayers } from '../data'
+import {
+  clearAllGames,
+  expectOperationToFail,
+  expectOperationToSucceed,
+  forceEndGame,
+  getValidJoinGameQuery,
+  getValidStartGameQuery,
+  maxGameDuration,
+  minGameDuration,
+  mockPlayers,
+} from '../data'
 import { prepareMongoDB, prepareApolloServer } from '../setup'
 import { ensureMongoDBDisconnected } from '../teardown'
 
@@ -256,22 +266,9 @@ describe('mutation/gameStop', () => {
 })
 
 describe('mutation/gameJoin', () => {
-  const getJoinGameQuery = (gameId: string, player: typeof mockPlayers[0]) => ({
-    query: `mutation {
-      gameJoin(
-        _id: "${gameId}"
-        playerName: "${player.name}"
-      ) {
-        game {
-          startTime
-          endTime
-        }
-      }
-    }`,
-  })
   const joinGame = (gameId: string, player: typeof mockPlayers[0]) => expectOperationToSucceed(
     server,
-    getJoinGameQuery(gameId, player),
+    { query: getValidJoinGameQuery(gameId, player) },
     { account: player.account, req: {}, res: {} },
   )
 
@@ -286,61 +283,17 @@ describe('mutation/gameJoin', () => {
   })
   it('fails if game is closed', async () => {
     // start game as p2
-    let res = await expectOperationToSucceed(
+    const res = await expectOperationToSucceed(
       server,
-      {
-        query: `mutation {
-          gameStart(
-            hostPlayerName: "${mockPlayers[1].name}"
-            maxPlayerCount: 4
-            duration: ${minGameDuration}
-          ) {
-            game {
-              _id
-              startTime
-            }
-          }
-        }`,
-      },
+      { query: getValidStartGameQuery(mockPlayers[1]) },
       { account: mockPlayers[1].account, req: {}, res: {} },
     )
     const game = res.data?.gameStart?.game
-    res = await expectOperationToSucceed(
-      server,
-      {
-        query: `mutation {
-          gameUpdateById(
-            _id: "${game._id}"
-            record: {
-              endTime: ${game.startTime + 1}
-            }
-          ) {
-            record {
-              endTime
-            }
-          }
-        }`,
-      },
-      { account: mockPlayers[1].account, req: {}, res: {} },
-    )
-    expect(res.data?.gameUpdateById?.record?.endTime).toEqual(game.startTime + 1)
-    await new Promise(resolve => setTimeout(resolve, 2)) // wait for endTime
+    await forceEndGame(server, game._id, game.startTime, mockPlayers[1].account)
     await expectOperationToFail(
       server,
       'There is no ongoing game with that id',
-      {
-        query: `mutation {
-          gameJoin(
-            _id: "${game._id}"
-            playerName: "${mockPlayers[0].name}"
-          ) {
-            game {
-              startTime
-              endTime
-            }
-          }
-        }`,
-      },
+      { query: getValidStartGameQuery(mockPlayers[0]) },
     )
   })
   it('fails if game is full', async () => {
@@ -358,7 +311,7 @@ describe('mutation/gameJoin', () => {
     await expectOperationToFail(
       server,
       'This game is full',
-      getJoinGameQuery(gameId, mockPlayers[0]),
+      { query: getValidJoinGameQuery(gameId, mockPlayers[0]) },
     )
   })
 })
@@ -410,45 +363,13 @@ describe('mutation/gameUpdateById', () => {
     )
   })
   it('fails if game is closed', async () => {
-    let res = await expectOperationToSucceed(
+    const res = await expectOperationToSucceed(
       server,
-      {
-        query: `mutation {
-          gameStart(
-            hostPlayerName: "${mockPlayers[1].name}"
-            maxPlayerCount: 4
-            duration: ${minGameDuration}
-          ) {
-            game {
-              _id
-              startTime
-            }
-          }
-        }`,
-      },
+      { query: getValidStartGameQuery(mockPlayers[1]) },
       { account: mockPlayers[1].account, req: {}, res: {} },
     )
     const game = res.data?.gameStart?.game
-    res = await expectOperationToSucceed(
-      server,
-      {
-        query: `mutation {
-          gameUpdateById(
-            _id: "${game._id}"
-            record: {
-              endTime: ${game.startTime + 1}
-            }
-          ) {
-            record {
-              endTime
-            }
-          }
-        }`,
-      },
-      { account: mockPlayers[1].account, req: {}, res: {} },
-    )
-    expect(res.data?.gameUpdateById?.record?.endTime).toEqual(game.startTime + 1)
-    await new Promise(resolve => setTimeout(resolve, 2)) // wait for endTime
+    await forceEndGame(server, game._id, game.startTime, mockPlayers[1].account)
     await expectOperationToFail(
       server,
       'There is no ongoing game with that id',

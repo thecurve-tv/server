@@ -32,11 +32,11 @@ export async function getGraphQLContext(expressContext: ExpressContext & { accou
     if (!account) throw new AuthenticationError('You must be logged in to use the GraphQL endpoint')
   }
   const resolverContext: ResolverContext = { ...expressContext, account: (account as IAccount) }
-  await checkGlobalRateLimit(resolverContext)
   return resolverContext
 }
 
-async function getAccountFromExpressContext({ connection, req, res }: ExpressContext): Promise<IAccount | null> {
+async function getAccountFromExpressContext(context: ExpressContext): Promise<IAccount | null> {
+  const { connection, req, res } = context
   let accessToken: string | undefined
   let account: IAccount | null
   if (connection) {
@@ -45,6 +45,7 @@ async function getAccountFromExpressContext({ connection, req, res }: ExpressCon
     account = await authenticateSubscription(accessToken)
   } else {
     // Operation is a Query/Mutation
+    await checkGlobalRateLimit(context) // ip is not exposed on Apollo api for subscriptions so can only rate limit queries/mutations
     accessToken = security.getAccessToken(req)
     account = await authenticateGraphRequest(req, res)
   }
