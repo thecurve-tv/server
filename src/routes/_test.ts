@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson'
 import { Router } from 'express'
 import { startSession } from 'mongoose'
 import { apolloServer } from '../graphql/graphql'
@@ -52,9 +53,11 @@ router.post('/clearGames', fetchAccount(), (req: AuthenticatedRequest, res, next
 })
 
 router.post('/execGraphql', (req, res, next) => {
+  const account = req.body.account
+  if (account?._id) account._id = new ObjectId(account._id)
   apolloServer.executeOperation(
     req.body.request,
-    { account: req.body.account, req, res },
+    { account, req, res },
   )
     .then(gRes => res.send(gRes))
     .catch(next)
