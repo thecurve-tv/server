@@ -19,11 +19,9 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-          registry-url: https://npm.pkg.github.com
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - name: Install NPM packages 📦
-        run: npm ci
+      - run: npm ci
       - name: Lint code ✔🕵️‍♀️
         run: npm run lint
   audit-packages:
@@ -34,23 +32,30 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-          registry-url: https://npm.pkg.github.com
       - uses: actions/checkout@v2
       - name: Install NPM packages 📦
         run: npm ci
       - name: Audit NPM packages ✔🕵️‍♀️
         # only fails the audit if the results include a vulnerability with a level of moderate or higher
         run: npm audit --audit-level=moderate --production
+  audit-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - name: Check for circular dependencies 🚫♻
+        run: npx madge --circular .
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-          registry-url: https://npm.pkg.github.com
       - uses: actions/checkout@v2
-      - name: Install NPM packages 📦
-        run: npm ci
+      - run: npm ci
       - name: Build server 🛠
         run: npm run build
       - name: Upload deployment artifacts ⛅
@@ -65,10 +70,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-          registry-url: https://npm.pkg.github.com
       - uses: actions/checkout@v2
-      - name: Install NPM packages 📦
-        run: npm ci
+      - run: npm ci
       - name: Create .env 🤫
         uses: DeveloperRic/action-create-env@v1.0.3
         with:
@@ -85,7 +88,6 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-          registry-url: https://npm.pkg.github.com
       - uses: actions/checkout@v2 # required for GITHUB_WORKSPACE env var
       - name: Download deployment artifacts 🌩
         uses: actions/download-artifact@v2
