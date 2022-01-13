@@ -293,7 +293,7 @@ describe('mutation/gameJoin', () => {
     await expectOperationToFail(
       server,
       'There is no ongoing game with that id',
-      { query: getValidStartGameQuery(mockPlayers[0]) },
+      { query: getValidJoinGameQuery(game._id, mockPlayers[0]) },
     )
   })
   it('fails if game is full', async () => {

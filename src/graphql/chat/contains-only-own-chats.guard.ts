@@ -14,7 +14,7 @@ export default class ContainsOnlyOwnChatsGuard extends Guard<ResolverContext, Fi
     super('egress')
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, any>): Promise<void | GuardOutput<FindManyArgs, unknown>> {
+  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, any>): Promise<void | GuardOutput<FindManyArgs, any>> {
     const chats: IChat[] = data
     if (!chats || chats.length == 0) return
     const uniqueChatIdStrs = new Set(chats.map(chat => chat._id.toHexString()))
