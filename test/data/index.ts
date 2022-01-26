@@ -13,9 +13,9 @@ export const maxGameDuration = 5 * 60 * 60 * 1000
 
 export async function clearAllGames(account: IAccount) {
   const accountIds = new Set([ account._id.toHexString(), ...mongo.accounts.map(a => a._id) ])
-  const promises = []
-  for (const _id of accountIds) promises.push(clearGames(_id))
-  await Promise.all(promises)
+  for (const _id of accountIds) {
+    await clearGames(_id)
+  }
 }
 
 export function getValidStartGameQuery(hostPlayer: typeof mockPlayers[0] = mockPlayers[0]) {
