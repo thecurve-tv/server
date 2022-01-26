@@ -8,7 +8,7 @@ beforeAll(ensureMongoDBConnected)
 afterAll(ensureMongoDBDisconnected)
 
 describe('REST/accounts', () => {
-  it('POST ./', async () => {
+  test('POST ./', async () => {
     await Account.deleteMany({ email: environment.AUTH0_USER.email })
     const reqData = {
       auth0Id: environment.AUTH0_USER.id,
@@ -20,5 +20,14 @@ describe('REST/accounts', () => {
     const doc = await Account.findById(docId)
     expect(doc).toBeTruthy()
     expect(doc).toMatchObject(reqData)
+  })
+})
+
+describe('REST/players', () => {
+  describe('GET ./:playerId/photo', () => {
+    it.todo('works')
+    it.todo('fails if player not found')
+    it.todo('fails if requester not in same game as player')
+    it.todo('fails if player has no photo')
   })
 })

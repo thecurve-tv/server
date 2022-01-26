@@ -7,6 +7,7 @@ import { AccountTC, GameTC, PhotoTC, PlayerTC } from '../types'
 import CanEditPlayerGuard from './can-edit-player.guard'
 import ContainsOnlyCommonPlayersGuard from './contains-only-common-players.guard'
 import { PlayerChatsRelationResolver } from './player-chats.relation.resolver'
+import playerUploadPhotoMutationResolver from './player-upload-photo.mutation.resolver'
 
 // normalised relations
 PlayerTC.addRelation('account', {
@@ -25,11 +26,11 @@ PlayerTC.addRelation('game', {
   projection: { game: 1 },
 })
 PlayerTC.addRelation('photo', {
-  resolver: () => PhotoTC.mongooseResolvers.findById(),
+  resolver: () => PhotoTC.mongooseResolvers.findOne(),
   prepareArgs: {
-    _id: player => player.photo,
+    filter: player => ({ player: player._id }),
   },
-  projection: { photo: 1 },
+  projection: { _id: 1 },
 })
 // non-normalised relations
 PlayerTC.addRelation('chats', {
@@ -46,4 +47,5 @@ export const playerQueries: ObjectTypeComposerFieldConfigMapDefinition<IPlayer, 
 
 export const playerMutations: ObjectTypeComposerFieldConfigMapDefinition<IPlayer, ResolverContext> = {
   playerUpdateById: guardResolver(PlayerTC.mongooseResolvers.updateById(), new CanEditPlayerGuard()),
+  playerUploadPhoto: guardResolver(playerUploadPhotoMutationResolver, new CanEditPlayerGuard()),
 }

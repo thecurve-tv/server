@@ -35,18 +35,31 @@ export async function fetchAccountUsingJwtPayload(payload: JwtRequestUser, proje
   return await Account.findOne({ auth0Id: payload?.sub }, projection)
 }
 
+export type ErrorResponse = {
+  status: number
+  message: string
+  data?: unknown
+}
 /**
  * Returns a unified error reponse structure for http(s) requests
  */
-export function errorResponse(statusCode: number, description: string, res?: Response, data?: unknown) {
+export function errorResponse(statusCode: number, description: string, res: undefined, data?: unknown): ErrorResponse
+export function errorResponse(statusCode: number, description: string, res: Response, data?: unknown): never
+export function errorResponse(statusCode: number, description: string, res?: Response, data?: unknown): ErrorResponse | never {
   const json = {
     status: statusCode,
     message: description,
     data: data,
   }
-  if (typeof data == 'boolean') data = null
-  if (res) res.status(statusCode).send(json)
-  return json
+  if (statusCode >= 500 && !res) {
+    console.error(json.data)
+  }
+  if (environment.PROD) {
+    json.data = undefined
+  }
+  if (!res) return json
+  res.status(statusCode).send(json)
+  return (<unknown>undefined) as never
 }
 
 /**

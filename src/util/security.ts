@@ -39,7 +39,7 @@ export class ExpressSecurity {
     return (req: AuthenticatedRequest, _res, next) => {
       const accessToken = this.getAccessToken(req)
       if (!accessToken) {
-        return next(new Error('Failed to get access token from request'))
+        return next(environment.PROD ? new Error('Failed to get access token from request') : undefined)
       }
       this.verifyJwt(accessToken)
         .then(payload => {

@@ -5,14 +5,28 @@ import { apolloServer } from '../graphql/graphql'
 import { Chat } from '../models/chat'
 import { ChatPlayer } from '../models/chatPlayer'
 import { Game } from '../models/game'
-import { Photo } from '../models/photo'
+import { IPhoto, Photo } from '../models/photo'
 import { Player } from '../models/player'
 import { Ranking } from '../models/ranking'
 import { Room } from '../models/room'
+import { getBackblazeInstance } from '../util/backblaze'
 import { AuthenticatedRequest, fetchAccount } from '../util/session'
 
-export const router = Router()
+const router = Router()
+export default router
 
+async function deletePhotosFromB2(photos: IPhoto[]) {
+  const b2 = await getBackblazeInstance()
+  await b2.authorize()
+  await Promise.all(
+    photos.map(photo => {
+      return b2.deleteFileVersion({
+        fileId: photo.metadata.fileId as string,
+        fileName: photo.metadata.fileName as string,
+      })
+    }),
+  )
+}
 export async function clearGames(accountId: string) {
   const gameIds = (await Game.find(
     { hostAccount: accountId },
@@ -26,12 +40,20 @@ export async function clearGames(accountId: string) {
     { game: { $in: gameIds } },
     { _id: 1 },
   )).map(c => c._id)
+  const photos = await Photo.find(
+    { player: { $in: playerIds } },
+    { metadata: 1 },
+  )
   const session = await startSession()
   await session.withTransaction(async () => {
     await Promise.all([
       Ranking.deleteMany({ game: { $in: gameIds } }, { session }),
       Room.deleteMany({ player: { $in: playerIds } }, { session }),
-      Photo.deleteMany({ player: { $in: playerIds } }, { session }),
+      deletePhotosFromB2(photos),
+      Photo.deleteMany(
+        { _id: { $in: photos.map(p => p._id) } },
+        { session },
+      ),
       ChatPlayer.deleteMany({
         $or: [
           { chat: { $in: chatIds } },

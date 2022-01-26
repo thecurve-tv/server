@@ -13,9 +13,9 @@ export const maxGameDuration = 5 * 60 * 60 * 1000
 
 export async function clearAllGames(account: IAccount) {
   const accountIds = new Set([ account._id.toHexString(), ...mongo.accounts.map(a => a._id) ])
-  const promises = []
-  for (const _id of accountIds) promises.push(clearGames(_id))
-  await Promise.all(promises)
+  for (const _id of accountIds) {
+    await clearGames(_id)
+  }
 }
 
 export function getValidStartGameQuery(hostPlayer: typeof mockPlayers[0] = mockPlayers[0]) {
@@ -58,7 +58,11 @@ export async function expectOperationToSucceed(
   context?: Parameters<typeof server.executeOperation>[1],
   debug?: (res: GraphQLResponse) => void,
 ) {
-  const res = await server.executeOperation(request, context)
+  const res = await server.executeOperation(request, {
+    req: {},
+    res: {},
+    ...context,
+  })
   if (debug) debug(res)
   expect(res.errors).toBeFalsy()
   return res
