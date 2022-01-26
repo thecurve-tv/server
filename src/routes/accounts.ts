@@ -6,7 +6,8 @@ import { Account, IAccount } from '../models/account'
 import { security } from '../util/security'
 import { errorResponse, AuthenticatedRequest, fetchAccount } from '../util/session'
 
-export const router = Router()
+const router = Router()
+export default router
 
 router.get('', security.ensureAuthenticated(), fetchAccount(), (req: AuthenticatedRequest, res: Response) => {
   if (!req.account) return errorResponse(404, 'Failed to get an account with that access token', res)

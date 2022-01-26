@@ -1,5 +1,6 @@
 import { ExpressContext } from 'apollo-server-express'
-import { Request } from 'express'
+import { Request, RequestHandler } from 'express'
+import { errorResponse } from '../util/session'
 import { Guard, GuardInput, GuardOutput } from './guard'
 import { GraphErrorResponse } from './types'
 
@@ -13,11 +14,11 @@ const globalWindows: Record<Request['ip'], {
   remainingQuota: number,
 }> = {}
 
-export class GlobalRateLimitGuard extends Guard<ExpressContext> {
+export class GlobalRateLimitGuard extends Guard<{req?: Request}> {
   constructor() {
     super('ingress')
   }
-  async check({ context }: GuardInput<ExpressContext, unknown, unknown>): Promise<void | GuardOutput<unknown, unknown>> {
+  async check({ context }: GuardInput<{req?: Request}, unknown, unknown>): Promise<void | GuardOutput<unknown, unknown>> {
     const now = Date.now()
     const ip = context?.req?.ip
     if (!ip) {
@@ -49,4 +50,19 @@ export class GlobalRateLimitGuard extends Guard<ExpressContext> {
 
 export async function checkGlobalRateLimit(context: ExpressContext): Promise<void> {
   await new GlobalRateLimitGuard().check({ context, args: {} })
+}
+
+export function useGlobalRateLimit(): RequestHandler {
+  const limiter = new GlobalRateLimitGuard()
+  return (req, res, next) => {
+    limiter.check({ context: { req }, args: {} })
+      .then(() => next())
+      .catch((err: GraphErrorResponse) => {
+        if (!err.extensions || !err.message) {
+          throw err
+        }
+        errorResponse(parseInt(err.extensions.code), err.message, res, err.extensions)
+      })
+      .catch(next)
+  }
 }

@@ -18,6 +18,10 @@ const photoSchema = new Schema(
       type: String,
       required: true,
     },
+    metadata: {
+      type: 'Object',
+      default: {},
+    },
     ...defaultProperties,
   },
   defaultOptions,
@@ -27,6 +31,7 @@ export interface IPhoto extends IDefaultProperties {
   player: ObjectId
   uri: string
   alt: string
+  metadata: Record<string, unknown>
 }
 
 export const Photo = model<IPhoto>('Photo', photoSchema)

@@ -11,7 +11,7 @@ export default class ContainsOnlyCommonPlayersGuard extends Guard<ResolverContex
     super('egress')
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, any>): Promise<void | GuardOutput<FindManyArgs, unknown>> {
+  async check({ context, data }: GuardInput<ResolverContext, FindManyArgs, any>): Promise<void | GuardOutput<FindManyArgs, any>> {
     const players: IPlayer[] = data
     // the game field might not have been requested, so fetch it
     const playersGameIdsDoc = await Player.find({ _id: { $in: players.map(p => p._id) } }, { game: 1 })

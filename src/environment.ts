@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
-dotenv.config()
+
+dotenv.config({ path: process.env.DOTENV_PATH || undefined })
 
 export const environment = {
   PROD: !!process.env.PROD,
@@ -8,6 +9,7 @@ export const environment = {
   AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
   AUTH0_API_AUDIENCE: process.env.AUTH0_API_AUDIENCE,
   AUTH0_API_DOMAIN: process.env.AUTH0_API_DOMAIN,
+  B2_APPLICATION_KEY: process.env.B2_APPLICATION_KEY,
   CLIENT_DOMAIN: process.env.CLIENT_DOMAIN,
   DEV_ACCOUNT_ID: process.env.DEV_ACCOUNT_ID,
   GOOGLE_APPLICATION_CREDENTIALS: process.env.GOOGLE_APPLICATION_CREDENTIALS,

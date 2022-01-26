@@ -37,10 +37,6 @@ const playerSchema = new Schema(
       maxLength: 1000,
       trim: true,
     },
-    photo: {
-      type: 'ObjectId',
-      ref: 'Photo',
-    },
     account: {
       type: 'ObjectId',
       ref: 'Account',

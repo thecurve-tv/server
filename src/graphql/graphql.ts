@@ -17,6 +17,7 @@ export const apolloServer = new ApolloServer({
   introspection: true,
   tracing: true,
   context: getGraphQLContext,
+  uploads: false, // use custom multipart upload handler
 })
 
 export async function getGraphQLContext(expressContext: ExpressContext & { account?: IDraftDocument<IAccount> }): Promise<ResolverContext> {
