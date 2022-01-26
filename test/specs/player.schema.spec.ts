@@ -43,3 +43,10 @@ describe('mutation/playerUpdateById', () => {
   it.todo('fails if game is closed')
   it.todo('fails if not editing own player')
 })
+
+describe('mutation/playerUploadPhoto', () => {
+  it.todo('works')
+  it.todo('fails if game is closed')
+  it.todo('fails if photo > 10 MB')
+  it.todo('fails if already uploaded photo')
+})

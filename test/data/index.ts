@@ -58,7 +58,11 @@ export async function expectOperationToSucceed(
   context?: Parameters<typeof server.executeOperation>[1],
   debug?: (res: GraphQLResponse) => void,
 ) {
-  const res = await server.executeOperation(request, context)
+  const res = await server.executeOperation(request, {
+    req: {},
+    res: {},
+    ...context,
+  })
   if (debug) debug(res)
   expect(res.errors).toBeFalsy()
   return res
