@@ -58,7 +58,7 @@ async function resolveGameJoinMutation({
   const now = Date.now()
   const activeGame = await validateGameJoinMutation(args, context.account._id, now)
   const gameId: IDraftDocument<IGame>['_id'] = args._id
-  const curveChatId: IDraftDocument<IChat>['_id'] = activeGame.mainChat
+  const curveChatId: IDraftDocument<IChat>['_id'] = activeGame.mainChat as ObjectId
   const playerDoc: IDraftDocument<IPlayer> = {
     _id: new ObjectId(),
     game: gameId,
@@ -70,10 +70,10 @@ async function resolveGameJoinMutation({
   }
   const chatPlayerDoc: IDraftDocument<IChatPlayer> = {
     chat: curveChatId,
-    player: playerDoc._id,
+    player: playerDoc._id as ObjectId,
   }
   const roomDoc: IDraftDocument<IRoom> = {
-    player: playerDoc._id,
+    player: playerDoc._id as ObjectId,
   }
   let result: GameJoinMutationResolverResult | unknown
   const session = await startSession()

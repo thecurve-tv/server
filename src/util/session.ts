@@ -61,16 +61,3 @@ export function errorResponse(statusCode: number, description: string, res?: Res
   res.status(statusCode).send(json)
   return (<unknown>undefined) as never
 }
-
-/**
- * Returns a unified error object structure for internal handlers
- */
-export function errorInternal(description: string, res?: Response, data?: unknown) {
-  const json = {
-    message: description,
-    data: data,
-    code: 500,
-  }
-  if (res) res.status(500).send(json)
-  return json
-}
