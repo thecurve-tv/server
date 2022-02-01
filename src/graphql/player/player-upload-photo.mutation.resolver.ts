@@ -129,14 +129,14 @@ async function uploadFileToB2(player: IPlayer, b2: Backblaze, mimeType: string, 
         maxBytesSize: 10 * 1024 * 1024,
       })
     } catch (_err) {
-      const err = _err as BackblazeError
       const reachedErrorLimit = tries == 5
       if (reachedErrorLimit) {
         console.log(_err) // print error in case the b2 api fails to discriminate it
       }
+      const err = _err as BackblazeError
       if (reachedErrorLimit || !b2.shouldRetryUpload(err)) {
         throw new GraphErrorResponse(
-          err.status || (err.data as {status?: number})?.status || 500,
+          err.response?.data?.status || 500,
           'Failed to upload file',
           err,
         )

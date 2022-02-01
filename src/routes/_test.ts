@@ -9,7 +9,7 @@ import { IPhoto, Photo } from '../models/photo'
 import { Player } from '../models/player'
 import { Ranking } from '../models/ranking'
 import { Room } from '../models/room'
-import { getBackblazeInstance } from '../util/backblaze'
+import { getBackblazeInstance, BackblazeError } from '../util/backblaze'
 import { AuthenticatedRequest, fetchAccount } from '../util/session'
 
 const router = Router()
@@ -23,6 +23,11 @@ async function deletePhotosFromB2(photos: IPhoto[]) {
       return b2.deleteFileVersion({
         fileId: photo.metadata.fileId as string,
         fileName: photo.metadata.fileName as string,
+      }).catch(_err => {
+        const err = _err as BackblazeError
+        if (err.response?.data?.code !== 'file_not_present') {
+          throw err.response
+        }
       })
     }),
   )

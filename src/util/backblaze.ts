@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import crypto from 'crypto'
 import { environment } from '../environment'
 
@@ -88,12 +88,13 @@ export interface DownloadFileByIdConfig {
   fileId: string
 }
 
-export class BackblazeError extends Error {
+export interface BackblazeErrorResponse {
   status?: number
   code?: string
   description?: string
   data?: unknown
 }
+export type BackblazeError<TBody = unknown> = AxiosError<BackblazeErrorResponse, TBody>
 
 export class Backblaze {
   private readonly B2_API_ROUTE = '/b2api/v2'
@@ -202,7 +203,8 @@ export class Backblaze {
     return data
   }
 
-  shouldRetryUpload(uploadFileError: BackblazeError): boolean {
+  shouldRetryUpload(err: BackblazeError): boolean {
+    const uploadFileError = err.response?.data
     return (
       (uploadFileError?.status === 401 && uploadFileError?.code === 'expired_auth_token') ||
       uploadFileError?.status === 408 ||
@@ -242,7 +244,7 @@ export class Backblaze {
     const expectedSha1 = headers['x-bz-content-sha1']
     const sha1 = crypto.createHash('sha1').update(data).digest('hex')
     if (sha1 !== expectedSha1) {
-      throw new BackblazeError(`Download was corrupted. Expected sha1: ${expectedSha1}, got ${sha1}`)
+      throw new Error(`Download was corrupted. Expected sha1: ${expectedSha1}, got ${sha1}`)
     }
     return data
   }

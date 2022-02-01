@@ -12,6 +12,7 @@ import accountsRouter from './routes/accounts'
 import playersRouter from './routes/players'
 import testRouter from './routes/_test'
 import { security } from './util/security'
+import { errorResponse } from './util/session'
 
 export const app = express()
 
@@ -47,7 +48,7 @@ app.use('*', (_req, res) => {
 })
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err, (<Error>err).stack)
-  res.status(500).send('Something broke!')
+  errorResponse(500, 'Something broke!', res, err)
 })
 
 export async function onListening(): Promise<void> {

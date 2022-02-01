@@ -29,7 +29,7 @@ export interface IDefaultProperties extends Document {
   }
 }
 
-export type IDraftDocument<T> = Omit<T, keyof Document> & { _id?: Document['_id'] }
+export type IDraftDocument<T extends IDefaultProperties> = Omit<T, keyof Document> & { _id?: T['_id'] }
 
 export const emailRegex =
   /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
