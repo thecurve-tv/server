@@ -72,7 +72,7 @@ async function resolveChatCreateMutation({
   }
   const chatPlayerDocs: IDraftDocument<IChatPlayer>[] = args.playerIds.map(playerId => {
     return {
-      chat: chatDoc._id,
+      chat: chatDoc._id as ObjectId,
       player: new ObjectId(playerId),
     }
   })
