@@ -140,19 +140,21 @@ export class ExpressSecurity {
     return handlers
   }
 
-  enableCors(...allowedOrigins: string[]) {
+  enableCors(..._allowedOrigins: string[]) {
+    const allowedOrigins = new Set(_allowedOrigins)
     const allowAnonymous = !environment.PROD
-    if (!environment.PROD) {
-      const localhost = `http://localhost:${environment.PORT}`
-      const client = <string>environment.CLIENT_DOMAIN
-      if (!allowedOrigins.includes(localhost)) allowedOrigins.push(localhost)
-      if (!allowedOrigins.includes(client)) allowedOrigins.push(client)
+    if (environment.CLIENT_DOMAIN) {
+      allowedOrigins.add(environment.CLIENT_DOMAIN)
     }
     return cors({
       origin: (origin, callback) => {
-        if (allowAnonymous && origin === undefined) return callback(null, true)
-        if (allowedOrigins.find(allowed => allowed === origin)) callback(null, true)
-        else callback(new Error('Not allowed by CORS'))
+        if (
+          origin === undefined && allowAnonymous
+          || origin !== undefined && allowedOrigins.has(origin)
+        ) {
+          return callback(null, true)
+        }
+        return callback(new Error('Not allowed by CORS'))
       },
     })
   }
