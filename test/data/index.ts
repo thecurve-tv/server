@@ -64,6 +64,7 @@ export async function expectOperationToSucceed(
     ...context,
   })
   if (debug) debug(res)
+  if (res.errors) console.error(res)
   expect(res.errors).toBeFalsy()
   return res
 }

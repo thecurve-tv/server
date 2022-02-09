@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson'
 import { Request, Response } from 'express'
 import { getGraphQLContext } from '../../src/graphql/graphql'
 import { GLOBAL_WINDOW_CONSTRAINS } from '../../src/graphql/rate-limits'
@@ -19,8 +20,9 @@ describe('rate limiting', () => {
   it('enforces global rate limit', async () => {
     GLOBAL_WINDOW_CONSTRAINS['every'] = 60 * 1000
     GLOBAL_WINDOW_CONSTRAINS['quota'] = 1
+    const fixtureAccount = mockPlayers[0].account
     const testContext = {
-      account: mockPlayers[0].account,
+      account: { ...fixtureAccount, _id: new ObjectId(fixtureAccount._id) },
       req: ({} as Request),
       res: ({} as Response),
     }
