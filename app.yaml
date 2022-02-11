@@ -1,6 +1,11 @@
+# https://cloud.google.com/appengine/docs/flexible/nodejs/reference/app-yaml
 runtime: nodejs14
+env: flex
 automatic_scaling:
-  max_concurrent_requests: 20
+  min_num_instances: 1
+  max_num_instances: 3
+  cpu_utilization:
+    target_utilization: 0.75
 handlers:
   - url: .*
     script: auto
