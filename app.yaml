@@ -1,5 +1,5 @@
 # https://cloud.google.com/appengine/docs/flexible/nodejs/reference/app-yaml
-runtime: nodejs14
+runtime: nodejs
 env: flex
 automatic_scaling:
   min_num_instances: 1
