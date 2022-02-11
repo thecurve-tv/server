@@ -99,6 +99,7 @@ jobs:
         uses: DeveloperRic/action-create-env@v1.0.3
         with:
           full_text: ${{ secrets.PROD_ENV }}
+          directory: build
       - name: Deploy app to GAE 🚀
         uses: google-github-actions/deploy-appengine@v0.3.0
         with:
