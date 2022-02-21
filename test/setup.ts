@@ -1,17 +1,21 @@
 import { ApolloServer, ExpressContext } from 'apollo-server-express'
 import { ObjectId } from 'bson'
+import { Server } from 'http'
 import mongoose from 'mongoose'
 import Schema from '../src/graphql/schema'
 import { Account, IAccount } from '../src/models/account'
 import { IDraftDocument } from '../src/models/_defaults'
-import { connectMongoDB } from '../src/mongodb'
+import { app, onListening } from '../src/app'
+import bootstrapApp from '../src/bootstrapper'
+import { awaitState, connectMongoDB } from '../src/mongodb'
 import mongo from './data/mongo-test-data.json'
 import { environment } from './environment'
 
 export async function ensureMongoDBConnected() {
-  if (mongoose.connection.readyState != 1) {
+  if (mongoose.connection.readyState == 0) {
     await connectMongoDB(environment.MONGODB_CONNECT_URI)
   }
+  await awaitState(1)
 }
 
 export async function prepareMongoDB(): Promise<IAccount> {
@@ -27,15 +31,37 @@ export async function prepareMongoDB(): Promise<IAccount> {
   return account
 }
 
-export function prepareApolloServer(account?: IAccount): ApolloServer {
+export function prepareApolloServer(defaultAccount?: IAccount): ApolloServer {
   return new ApolloServer({
     schema: Schema,
     debug: true,
     tracing: true,
     context: (context: ExpressContext & { account?: IDraftDocument<IAccount> }) => {
       const fixtureAccount = mongo.accounts[0]
-      context.account = context.account || account || { ...fixtureAccount, _id: new ObjectId(fixtureAccount._id) }
-      return context
+      let accountForQuery = context.account || defaultAccount || fixtureAccount
+      accountForQuery = {
+        ...accountForQuery,
+        _id: new ObjectId(accountForQuery._id),
+      }
+      return {
+        ...context,
+        account: accountForQuery,
+      }
     },
+  })
+}
+
+export function launchExpressServer(): Promise<Server> {
+  return new Promise(resolve => {
+    const server = bootstrapApp(
+      app,
+      async () => {
+        await onListening()
+        resolve(server)
+      },
+      async () => {
+        // pass
+      },
+    )
   })
 }
