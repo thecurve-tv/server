@@ -1,27 +1,11 @@
-import axios from 'axios'
-import { Account } from '../../src/models/account'
-import { environment } from '../environment'
-import { ensureMongoDBConnected } from '../setup'
-import { ensureMongoDBDisconnected } from '../teardown'
+import { Server } from 'http'
+import { launchExpressServer } from '../setup'
+import { shutdownExpressServer } from '../teardown'
 
-beforeAll(ensureMongoDBConnected)
-afterAll(ensureMongoDBDisconnected)
+let server: Server
 
-describe('REST/accounts', () => {
-  test('POST ./', async () => {
-    await Account.deleteMany({ email: environment.AUTH0_USER.email })
-    const reqData = {
-      auth0Id: environment.AUTH0_USER.id,
-      email: environment.AUTH0_USER.email,
-    }
-    const res = await axios.post(`${environment.TEST_SERVER_DOMAIN}/accounts`, reqData)
-    expect(res.status).toEqual(201)
-    const docId = res.data._id
-    const doc = await Account.findById(docId)
-    expect(doc).toBeTruthy()
-    expect(doc).toMatchObject(reqData)
-  })
-})
+beforeAll(async () => server = await launchExpressServer())
+afterAll(async () => await shutdownExpressServer(server))
 
 describe('REST/players', () => {
   describe('GET ./:playerId/photo', () => {
