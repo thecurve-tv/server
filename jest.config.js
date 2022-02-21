@@ -1,11 +1,14 @@
+/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
+  preset: 'ts-jest',
   clearMocks: true,
-  moduleFileExtensions: ['js', 'ts'],
+  moduleFileExtensions: [ 'js', 'ts' ],
   testEnvironment: 'node',
-  testMatch: ['**/*.spec.ts'],
-  testRunner: 'jest-circus/runner',
-  transform: {
-    '^.+\\.ts$': 'ts-jest'
+  testMatch: [ '**/*.spec.ts' ],
+  globals: {
+    'ts-jest': {
+      tsconfig: 'test/tsconfig.json',
+      isolatedModules: true,
+    },
   },
-  verbose: true
 }
