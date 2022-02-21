@@ -7,8 +7,7 @@ import path from 'path'
 import { environment } from './environment'
 import { apolloServer } from './graphql/graphql'
 import { useGlobalRateLimit } from './graphql/rate-limits'
-import { connectMongoDB } from './mongodb'
-import accountsRouter from './routes/accounts'
+import { connectMongoDB, disconnectMongoDB } from './mongodb'
 import playersRouter from './routes/players'
 import testRouter from './routes/_test'
 import { security } from './util/security'
@@ -37,7 +36,6 @@ apolloServer.applyMiddleware({
 })
 
 app.use(useGlobalRateLimit())
-app.use('/accounts', accountsRouter)
 app.use('/players', playersRouter)
 if (!environment.PROD) {
   app.use('/_test', testRouter)
@@ -53,4 +51,8 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 
 export async function onListening(): Promise<void> {
   await connectMongoDB()
+}
+
+export async function onClose(): Promise<void> {
+  await disconnectMongoDB()
 }
